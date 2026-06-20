@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.env
+.env.*
+
+# Dependencies
+node_modules/
+
+# Local-only design / handoff notes (kept out of the public repo)
+/SoT/
+tmp/

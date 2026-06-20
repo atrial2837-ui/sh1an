@@ -1,0 +1,1 @@
+var o="SET_YOUR_SHEET_ID_HERE",t={new:{id:"new",label:"Main",listGid:"0",setlistGid:"684306666"},old:{id:"old",label:"Archive",listGid:"959470167",setlistGid:"254288043"}},e="new",s=t.new.listGid,I=t.new.setlistGid,T=12,n=12,E=50,c=20;var i=`https://docs.google.com/spreadsheets/d/${o}/edit`;export{e as a,T as b,n as c,E as d,c as e};

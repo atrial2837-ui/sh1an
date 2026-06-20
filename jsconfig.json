@@ -1,0 +1,15 @@
+{
+  "//": "#6 ドメイン層だけに薄い型チェックを導入。VS Code 等のエディタが src/domain の JSDoc 型と実装の食い違い（契約ドリフト）を型チェックする。checkJs のみ・strict 無効でノイズを抑え、純粋関数の契約崩れだけを安価に検出する。include を src/domain に限定しているため他層・docs/js のエディタ挙動は従来どおり。CI/build/実行/表示には一切影響しない（tsc は未導入。ブロッキングなゲートにするなら `npm i -D typescript` 後に `npm run typecheck`）。",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "module": "esnext",
+    "target": "es2022",
+    "moduleResolution": "bundler",
+    "strict": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/domain/**/*.js"]
+}

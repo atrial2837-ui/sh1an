@@ -1,0 +1,35 @@
+{
+  "name": "sh1an 歌唱データベース",
+  "icons": [
+    {
+      "purpose": "any",
+      "type": "image/png",
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192"
+    },
+    {
+      "purpose": "any",
+      "type": "image/png",
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512"
+    },
+    {
+      "purpose": "maskable",
+      "type": "image/png",
+      "src": "assets/icons/icon-maskable-512.png",
+      "sizes": "512x512"
+    },
+    {
+      "purpose": "any",
+      "type": "image/svg+xml",
+      "src": "assets/site-icon.svg",
+      "sizes": "any"
+    }
+  ],
+  "description": "sh1anさんの歌った曲リスト、ランキング、歌枠タイムライン",
+  "display": "standalone",
+  "start_url": "/",
+  "background_color": "#111317",
+  "theme_color": "#367ebf",
+  "short_name": "sh1an DB"
+}

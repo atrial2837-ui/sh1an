@@ -1,0 +1,21 @@
+{
+  "name": "sh1an-songlist",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test --test-reporter=spec",
+    "build": "node build.mjs",
+    "build:main": "node build.mjs main",
+    "build:admin": "node build.mjs admin",
+    "smoke": "node scripts/smoke.mjs",
+    "arch": "node scripts/arch-lint.mjs",
+    "typecheck": "tsc -p jsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  },
+  "dependencies": {
+    "fuse.js": "7.0.0"
+  }
+}
