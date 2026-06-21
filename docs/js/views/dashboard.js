@@ -1,6 +1,6 @@
 import { state } from '../store.js';
 import { $, escapeHtml, fmtDate, fmtMonth, daysSince, youtubeThumb } from '../utils.js';
-import { periodHits, countStreamsThisMonth, countSongsThisMonth, countNewSongsThisMonth, buildMonthly, buildHeatmap, heatLevel, isoDate } from '../domain-compat.js';
+import { periodHits, countStreamsThisMonth, countSongsThisMonth, countNewSongsThisMonth, buildHeatmap, heatLevel, isoDate } from '../domain-compat.js';
 import { getToday } from '../store.js';
 import { icon } from '../icons.js';
 
@@ -14,8 +14,6 @@ export function renderDashboard() {
   const newSongs = countNewSongsThisMonth(songs, today);
   const panel = $('#panel-dashboard');
   const heatmap = buildHeatmap(streams, today);
-  const monthly = buildMonthly(streams).slice(-12);
-  const monthlyMax = Math.max(1, ...monthly.map(m => m.songs));
 
   const activityHtml = `
     <div class="card dashboard-card dashboard-activity-card">
@@ -47,7 +45,7 @@ export function renderDashboard() {
 
   const top5Html = `
     <div class="card dashboard-card dashboard-top-card">
-      <div class="card-title">${icon('rank')} TOP5 楽曲</div>
+      <div class="card-title">${icon('rank')} TOP 5 楽曲 <span class="pill">ALL TIME</span></div>
       <div class="bar-list">
         ${top5.length ? top5.map((s, i) => topBarRow(s, i, top5Max)).join('') : '<div class="empty-state">曲データなし</div>'}
       </div>
@@ -58,27 +56,26 @@ export function renderDashboard() {
     <div class="dashboard-grid" id="dashboard-grid">
       <div class="dashboard-overview-grid">
         ${activityHtml}
+        ${renderLatestStreamLog(streams[0])}
         ${top5Html}
         <div class="card dashboard-card dashboard-genre-card">
-          <div class="card-title">${icon('chart')} ジャンル分布 <span class="pill">楽曲数</span></div>
+          <div class="card-title">${icon('chart')} GENRE DISTRIBUTION <span class="pill">楽曲数</span></div>
           ${renderGenreChart(songs)}
         </div>
-        <div class="card dashboard-card dashboard-heatmap-card">
-          <div class="card-title">${icon('calendar')} 配信ヒートマップ <span class="pill">直近1年</span></div>
-          ${renderHeatmap(heatmap)}
+        <div class="card dashboard-card dashboard-schedule-card">
+          <div class="card-title">${icon('calendar')} 曜日・時間帯分布 <span class="pill">SCHEDULE DENSITY</span></div>
+          ${renderScheduleDensity(streams)}
         </div>
-        <div class="card dashboard-card dashboard-monthly-card">
-          <div class="card-title">${icon('music')} 月別 歌唱数 <span class="pill">直近12か月</span></div>
-          ${renderMonthlyBars(monthly, monthlyMax)}
+        <div class="card dashboard-card dashboard-heatmap-card">
+          <div class="card-title">${icon('calendar')} 配信ヒートマップ <span class="pill">ACTIVITY HEATMAP</span></div>
+          ${renderHeatmap(heatmap)}
         </div>
       </div>
       ${renderResumeSection()}
-      ${renderRecapCardShell()}
       ${deferredDashboardHtml(streams, songs, recent)}
     </div>
   `;
   bindResumeSection();
-  bindRecapCard(streams, songs);
 }
 
 /* ── まとめカード（年間/月間リキャップ） ────────────────────────────────── */
@@ -244,7 +241,6 @@ function _fmtPos(sec) {
 
 function renderResumeSection() {
   const entries = _watchHistory().slice(0, 6);
-  if (!entries.length) return '';
   return `
     <div class="card dashboard-card dashboard-resume-card">
       <div class="card-title">${icon('play')} 続きから見る
@@ -254,7 +250,7 @@ function renderResumeSection() {
         </span>
       </div>
       <div class="dashboard-resume-list" id="dashboard-resume-list">
-        ${entries.map((e, i) => {
+        ${entries.length ? entries.map((e, i) => {
           const thumb = youtubeThumb(e.url);
           const days = Math.floor((Date.now() - (e.updatedAt || 0)) / 86400000);
           const ago = days <= 0 ? '今日' : `${days}日前`;
@@ -264,7 +260,7 @@ function renderResumeSection() {
             <span class="dashboard-resume-title">${escapeHtml(e.title || '動画')}</span>
             <span class="dashboard-resume-meta">${icon('time')} ${_fmtPos(e.t)} から ・ ${ago}</span>
           </button>`;
-        }).join('')}
+        }).join('') : '<div class="empty-state">再生履歴はまだありません</div>'}
       </div>
     </div>`;
 }
@@ -369,6 +365,75 @@ function topBarRow(s, i, max) {
         <div class="bar-bar" style="width:${pct}%;"></div>
       </div>
       <div class="bar-value">${s.count}</div>
+    </div>
+  `;
+}
+
+function renderLatestStreamLog(stream) {
+  if (!stream) {
+    return `
+      <div class="card dashboard-card dashboard-latest-card">
+        <div class="card-title">${icon('video')} LATEST STREAM LOG</div>
+        <div class="empty-state">直近の歌枠はまだありません</div>
+      </div>
+    `;
+  }
+  const thumb = stream.url ? youtubeThumb(stream.url) : '';
+  const songs = (stream.songs || []).slice(0, 5);
+  return `
+    <div class="card dashboard-card dashboard-latest-card">
+      <div class="card-title">
+        ${icon('video')} LATEST STREAM LOG
+        <span class="pill">${fmtDate(stream.date)}</span>
+      </div>
+      <div class="latest-stream-log">
+        <a class="latest-stream-thumb" href="${escapeHtml(stream.url || '#')}" target="_blank" rel="noopener" aria-label="YouTubeで開く">
+          ${thumb ? `<img src="${escapeHtml(thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}
+        </a>
+        <div class="latest-stream-body">
+          <h3>${escapeHtml(stream.title || '配信')}</h3>
+          <p>${icon('mic')} ${(stream.songs || []).length}曲 ・ ${daysSince(stream.date)}日前</p>
+          <div class="latest-setlist">
+            ${songs.length ? songs.map((s, i) => `
+              <span><strong>${i + 1}</strong>${escapeHtml(s.title || '—')}</span>
+            `).join('') : '<span>セットリスト未登録</span>'}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderScheduleDensity(streams) {
+  const days = ['日', '月', '火', '水', '木', '金', '土'];
+  const slots = [
+    { key: 'morning', label: '朝', from: 5, to: 11 },
+    { key: 'day', label: '昼', from: 11, to: 17 },
+    { key: 'night', label: '夜', from: 17, to: 23 },
+    { key: 'late', label: '深夜', from: 23, to: 29 },
+  ];
+  const counts = Array.from({ length: days.length }, () => Array(slots.length).fill(0));
+  for (const stream of streams) {
+    const d = stream.date instanceof Date ? stream.date : new Date(stream.date);
+    if (Number.isNaN(d.getTime())) continue;
+    const hour = d.getHours();
+    const h = hour < 5 ? hour + 24 : hour;
+    const slotIndex = slots.findIndex(slot => h >= slot.from && h < slot.to);
+    if (slotIndex >= 0) counts[d.getDay()][slotIndex]++;
+  }
+  const max = Math.max(1, ...counts.flat());
+  return `
+    <div class="schedule-density">
+      <div class="schedule-head"></div>
+      ${slots.map(slot => `<div class="schedule-slot-label">${slot.label}</div>`).join('')}
+      ${days.map((day, dayIndex) => `
+        <div class="schedule-day-label">${day}</div>
+        ${slots.map((slot, slotIndex) => {
+          const value = counts[dayIndex][slotIndex];
+          const level = Math.ceil((value / max) * 4);
+          return `<div class="schedule-cell l${value ? level : 0}" title="${day}曜 ${slot.label}: ${value}枠"><span>${value || ''}</span></div>`;
+        }).join('')}
+      `).join('')}
     </div>
   `;
 }

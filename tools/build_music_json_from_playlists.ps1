@@ -5,9 +5,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $playlists = @(
-  @{ Type = "cover";    List = "PLdAno8EXhmVbyr0Cw-1uby8iBxzoaP6QG" },
-  @{ Type = "original"; List = "PLdAno8EXhmVZPCwvt6tUd0gRLRAoEuGjd" },
-  @{ Type = "sugariri"; List = "PLdAno8EXhmVa7OaO4JtmTMn76LxYFaGDQ" }
+  @{ Type = "cover"; Label = "カバー曲"; List = "PLDzFP4tsPv4huDkQ8_CgziGFJWTrdTxl_" }
 )
 
 function Get-UrlText($url) {
@@ -72,6 +70,55 @@ function Get-RssDates($listId) {
   return $dates
 }
 
+function Get-PlaylistVideoIdsFromHtml($html) {
+  $seen = @{}
+  $ids = @()
+  $patterns = @(
+    "/watch\?v=([A-Za-z0-9_-]{11})",
+    """videoId""\s*:\s*""([A-Za-z0-9_-]{11})"""
+  )
+  foreach ($pattern in $patterns) {
+    foreach ($match in [regex]::Matches($html, $pattern)) {
+      $id = $match.Groups[1].Value
+      if ($id -and -not $seen[$id]) {
+        $seen[$id] = $true
+        $ids += $id
+      }
+    }
+  }
+  return $ids
+}
+
+function Get-VideoPageMeta($id) {
+  $html = Get-UrlText "https://www.youtube.com/watch?v=$id"
+  $title = ""
+  $titleMatch = [regex]::Match($html, '<meta\s+property="og:title"\s+content="(?<value>[^"]*)"', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+  if ($titleMatch.Success) {
+    $title = [System.Net.WebUtility]::HtmlDecode($titleMatch.Groups["value"].Value).Trim()
+  }
+  if (-not $title) {
+    $titleMatch = [regex]::Match($html, '<title>(?<value>.*?)</title>', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor [System.Text.RegularExpressions.RegexOptions]::Singleline)
+    if ($titleMatch.Success) {
+      $title = [System.Net.WebUtility]::HtmlDecode($titleMatch.Groups["value"].Value).Replace(" - YouTube", "").Trim()
+    }
+  }
+
+  $publishedAt = ""
+  $dateMatch = [regex]::Match($html, 'itemprop="datePublished"\s+content="(?<value>[^"]+)"', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+  if (-not $dateMatch.Success) {
+    $dateMatch = [regex]::Match($html, '"publishDate"\s*:\s*"(?<value>[^"]+)"', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+  }
+  if ($dateMatch.Success) {
+    $value = $dateMatch.Groups["value"].Value
+    if ($value.Length -ge 10) { $publishedAt = $value.Substring(0, 10) }
+  }
+
+  return [pscustomobject]@{
+    title       = $title
+    publishedAt = $publishedAt
+  }
+}
+
 function Get-PlaylistItems($playlist) {
   $url = "https://www.youtube.com/playlist?list=$($playlist.List)"
   $html = Get-UrlText $url
@@ -94,6 +141,23 @@ function Get-PlaylistItems($playlist) {
       type        = $playlist.Type
       url         = "https://www.youtube.com/watch?v=$id"
       publishedAt = $dates[$id]
+    }
+  }
+
+  if (-not $items.Count) {
+    foreach ($id in (Get-PlaylistVideoIdsFromHtml $html)) {
+      if ($seen[$id]) { continue }
+      $seen[$id] = $true
+      $meta = Get-VideoPageMeta $id
+      if (-not $meta.title) { continue }
+      $obj = [ordered]@{
+        id    = "mv_$id"
+        title = $meta.title
+        type  = $playlist.Type
+        url   = "https://www.youtube.com/watch?v=$id"
+      }
+      if ($meta.publishedAt) { $obj.publishedAt = $meta.publishedAt }
+      $items += [pscustomobject]$obj
     }
   }
   return $items
@@ -137,6 +201,13 @@ foreach ($playlist in $playlists) {
 }
 
 $result = [ordered]@{
+  sourcePlaylists = @($playlists | ForEach-Object {
+    [ordered]@{
+      type  = $_.Type
+      label = $_.Label
+      url   = "https://youtube.com/playlist?list=$($_.List)"
+    }
+  })
   videos = $videos
 }
 

@@ -267,9 +267,8 @@ function switchAudience(audience, options = {}) {
 function updateMobileMenuLabel() {
   const label = $('#mobile-menu-label');
   if (!label) return;
-  const channel = $('#channel-switch [data-channel].active')?.textContent?.trim() || '新ch';
   const audience = $('#audience-switch [data-audience].active')?.textContent?.trim() || 'リスナー';
-  label.textContent = `${channel} / ${audience}`;
+  label.textContent = audience;
 }
 
 function initMobileMenu() {

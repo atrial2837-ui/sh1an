@@ -1,4 +1,4 @@
-import{d as b}from"./chunk-RKZOC53G.js";import{e as c}from"./chunk-AW5KTZNU.js";import{G as w,Q as M,a as y,c as p,g as D}from"./chunk-I26RRBMD.js";function v(){let{songs:t,streams:l=[]}=c.data,i=c.rankingPeriod||"all",r=y("#panel-ranking");if(!r)return;let a=i==="all"?null:E(l,i),o=a?N(t,a):[...t].sort((n,s)=>s.count-n.count||n.title.localeCompare(s.title,"ja")),e=c.rankingLimit,d=o.slice(0,e),u=!!c.channelData?.fullLoaded;r.innerHTML=`
+import{d as b}from"./chunk-RKZOC53G.js";import{e as c}from"./chunk-AW5KTZNU.js";import{F as w,P as M,a as y,c as p,g as D}from"./chunk-Y7E4FXHW.js";function v(){let{songs:t,streams:l=[]}=c.data,i=c.rankingPeriod||"all",r=y("#panel-ranking");if(!r)return;let a=i==="all"?null:E(l,i),o=a?N(t,a):[...t].sort((n,s)=>s.count-n.count||n.title.localeCompare(s.title,"ja")),e=c.rankingLimit,d=o.slice(0,e),u=!!c.channelData?.fullLoaded;r.innerHTML=`
     <div class="section-header">
       <h2>${M("rank")} \u6B4C\u5531\u56DE\u6570\u30E9\u30F3\u30AD\u30F3\u30B0</h2>
       <span class="count-pill">${t.length}\u66F2\u4E2D</span>

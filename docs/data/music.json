@@ -1,1 +1,102 @@
-{"sourcePlaylists":[{"type":"cover","label":"カバー曲","url":"https://youtube.com/playlist?list=PLDzFP4tsPv4huDkQ8_CgziGFJWTrdTxl_&si=FnUlsTC98hDdSxEf"}],"videos":[]}
+{
+  "sourcePlaylists": [
+    {
+      "type": "cover",
+      "label": "カバー曲",
+      "url": "https://youtube.com/playlist?list=PLDzFP4tsPv4huDkQ8_CgziGFJWTrdTxl_"
+    }
+  ],
+  "videos": [
+    {
+      "id": "mv_F0_y8UZ5S3E",
+      "title": "ONE/DUSTCELL - sh1an(cover)",
+      "type": "cover",
+      "url": "https://www.youtube.com/watch?v=F0_y8UZ5S3E",
+      "publishedAt": "2026-03-03"
+    },
+    {
+      "id": "mv_MIhCxk92p6Q",
+      "title": "ラブ＆デストロイ/MI8k - sh1an(cover)",
+      "type": "cover",
+      "url": "https://www.youtube.com/watch?v=MIhCxk92p6Q",
+      "publishedAt": "2025-11-03"
+    },
+    {
+      "id": "mv_h3fZTfXX-k0",
+      "title": "君の脈で踊りたかった/Picon - sh1an(English cover)",
+      "type": "cover",
+      "url": "https://www.youtube.com/watch?v=h3fZTfXX-k0",
+      "publishedAt": "2025-10-17"
+    },
+    {
+      "id": "mv_rScoNCn0ppY",
+      "title": "とても素敵な六月でした/Eight - sh1an(cover)",
+      "type": "cover",
+      "url": "https://www.youtube.com/watch?v=rScoNCn0ppY",
+      "publishedAt": "2025-09-28"
+    },
+    {
+      "id": "mv_KeSpg5UmQr8",
+      "title": "怪獣/サカナクション - sh1an(cover)",
+      "type": "cover",
+      "url": "https://www.youtube.com/watch?v=KeSpg5UmQr8",
+      "publishedAt": "2025-09-15"
+    },
+    {
+      "id": "mv_udcZaX0xUZg",
+      "title": "フロム天国/理芽 feat.EMA - sh1an ＆ 雨霧リアン(cover)",
+      "type": "cover",
+      "url": "https://www.youtube.com/watch?v=udcZaX0xUZg",
+      "publishedAt": "2025-08-11"
+    },
+    {
+      "id": "mv_dmw6-dLzQ68",
+      "title": "月/Guiano - sh1an(cover)",
+      "type": "cover",
+      "url": "https://www.youtube.com/watch?v=dmw6-dLzQ68",
+      "publishedAt": "2024-05-11"
+    },
+    {
+      "id": "mv_kVJN6t5YgmY",
+      "title": "SOPPY/DUSTCELL - sh1an(cover)",
+      "type": "cover",
+      "url": "https://www.youtube.com/watch?v=kVJN6t5YgmY",
+      "publishedAt": "2024-03-15"
+    },
+    {
+      "id": "mv_gWnZVuw0pC4",
+      "title": "神っぽいな/ピノキオピー - sh1an(cover)",
+      "type": "cover",
+      "url": "https://www.youtube.com/watch?v=gWnZVuw0pC4",
+      "publishedAt": "2023-11-10"
+    },
+    {
+      "id": "mv_zVxvrlSeuxY",
+      "title": "怪獣の花唄/Vaundy - sh1an(cover)",
+      "type": "cover",
+      "url": "https://www.youtube.com/watch?v=zVxvrlSeuxY",
+      "publishedAt": "2023-08-27"
+    },
+    {
+      "id": "mv_0wWbVdEp-sE",
+      "title": "心に穴が空いた/ヨルシカ - sh1an(cover)",
+      "type": "cover",
+      "url": "https://www.youtube.com/watch?v=0wWbVdEp-sE",
+      "publishedAt": "2023-06-26"
+    },
+    {
+      "id": "mv_9Y0Ia16ylmI",
+      "title": "タイムイーター/MI8k - sh1an(cover)",
+      "type": "cover",
+      "url": "https://www.youtube.com/watch?v=9Y0Ia16ylmI",
+      "publishedAt": "2023-02-01"
+    },
+    {
+      "id": "mv_XYBTuDpBqkE",
+      "title": "法螺話/理芽 with Guiano - sh1an(cover)",
+      "type": "cover",
+      "url": "https://www.youtube.com/watch?v=XYBTuDpBqkE",
+      "publishedAt": "2022-09-01"
+    }
+  ]
+}
