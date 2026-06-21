@@ -64,6 +64,24 @@
 
   <section class="admin-panel">
     <div class="section-header">
+      <h2>歌枠情報編集</h2>
+      <span class="badge">タイトル・日付</span>
+    </div>
+    <p class="admin-note">登録済み歌枠の枠番号を指定して、配信タイトルと配信日だけを更新します。セトリ内容は変更されません。</p>
+    <div class="admin-form-grid">
+      <label>チャンネル<select id="edit-channel"></select></label>
+      <label>枠番号<input id="edit-source-index" type="number" min="1" placeholder="例: 173"></label>
+      <label>配信日<input id="edit-streamed-on" type="date"></label>
+      <label>配信タイトル<input id="edit-stream-title" type="text" placeholder="新しい配信タイトル"></label>
+    </div>
+    <div class="admin-actions">
+      <button class="btn primary" id="save-stream-meta" type="button">歌枠情報を保存</button>
+    </div>
+    <p class="admin-note" id="stream-meta-status"></p>
+  </section>
+
+  <section class="admin-panel">
+    <div class="section-header">
       <h2>キー・ジャンル管理</h2>
       <span class="badge" id="meta-badge">待機中</span>
     </div>

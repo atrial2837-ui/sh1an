@@ -102,6 +102,13 @@ export class InMemoryStreamRepository {
       .map((r) => ({ ...r }));
   }
 
+  async findByChannelSourceIndex(channelId, sourceIndex) {
+    for (const row of this._store.values()) {
+      if (row.channel_id === channelId && row.source_index === sourceIndex) return { ...row };
+    }
+    return null;
+  }
+
   /**
    * @returns {Promise<Stream[]>}
    */
@@ -123,5 +130,17 @@ export class InMemoryStreamRepository {
       }
     }
     return max + 1;
+  }
+
+  async updateMetadata(id, patch) {
+    const row = this._store.get(id);
+    if (!row) return null;
+    const next = {
+      ...row,
+      streamed_on: patch.streamedOn ?? row.streamed_on,
+      title: patch.title === undefined ? row.title : patch.title,
+    };
+    this._store.set(id, next);
+    return { ...next };
   }
 }

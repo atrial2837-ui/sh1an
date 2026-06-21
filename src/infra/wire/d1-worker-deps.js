@@ -12,6 +12,7 @@ import {
   D1StreamSongRepository,
   D1SongChannelStatsRepository,
   D1TimestampRepository,
+  D1SongRequestRepository,
 } from '../d1-worker/index.js';
 import { SystemClock } from '../clock/system-clock.js';
 import { FetchSpreadsheetGateway } from '../spreadsheet/fetch-spreadsheet-gateway.js';
@@ -34,6 +35,7 @@ export function createD1WorkerDeps(env) {
     streamSongs: new D1StreamSongRepository(client),
     stats: new D1SongChannelStatsRepository(client),
     timestamps: new D1TimestampRepository(client),
+    songRequests: new D1SongRequestRepository(client),
     spreadsheet: new FetchSpreadsheetGateway(),
     clock,
   };

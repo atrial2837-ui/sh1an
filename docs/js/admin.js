@@ -164,11 +164,19 @@ function renderQuality(data) {
 
 function loadChannels() {
   const channelSelect = $('#channel');
+  const editChannelSelect = $('#edit-channel');
   const channels = Object.values(CHANNELS);
-  channelSelect.innerHTML = channels.map((channel) => (
+  const html = channels.map((channel) => (
     `<option value="${escapeHtml(channel.id)}">${escapeHtml(channel.label)}</option>`
   )).join('');
-  channelSelect.value = CHANNELS[DEFAULT_CHANNEL] ? DEFAULT_CHANNEL : channels[0]?.id || '';
+  if (channelSelect) {
+    channelSelect.innerHTML = html;
+    channelSelect.value = CHANNELS[DEFAULT_CHANNEL] ? DEFAULT_CHANNEL : channels[0]?.id || '';
+  }
+  if (editChannelSelect) {
+    editChannelSelect.innerHTML = html;
+    editChannelSelect.value = CHANNELS[DEFAULT_CHANNEL] ? DEFAULT_CHANNEL : channels[0]?.id || '';
+  }
 }
 
 async function loadStatus() {
@@ -250,6 +258,23 @@ function initManagement() {
       loadStatus();
     } catch (error) {
       $('#stream-status').textContent = error.message || String(error);
+    }
+  });
+
+  $('#save-stream-meta')?.addEventListener('click', async () => {
+    if (!confirm('指定した歌枠のタイトル・日付を更新します。よろしいですか？')) return;
+    $('#stream-meta-status').textContent = '保存中...';
+    try {
+      const data = await adminApi('streams/metadata', {
+        channelCode: $('#edit-channel').value,
+        sourceIndex: $('#edit-source-index').value,
+        streamedOn: $('#edit-streamed-on').value,
+        title: $('#edit-stream-title').value,
+      });
+      $('#stream-meta-status').textContent = `保存しました: stream_id=${data.stream?.id ?? '-'}。必要なら静的データ生成を開始してください。`;
+      loadStatus();
+    } catch (error) {
+      $('#stream-meta-status').textContent = error.message || String(error);
     }
   });
 

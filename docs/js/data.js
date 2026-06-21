@@ -12,10 +12,26 @@ import {
 } from './domain-compat.js';
 import { ensureSongsTags } from './tagging.js';
 
+function dataVersion() {
+  try {
+    const moduleVersion = new URL(import.meta.url).searchParams.get('v');
+    if (moduleVersion) return moduleVersion;
+  } catch (_) {}
+  try {
+    const mainScript = document.querySelector('script[type="module"][src*="main.js"]')?.src || '';
+    const scriptVersion = new URL(mainScript, location.href).searchParams.get('v');
+    if (scriptVersion) return scriptVersion;
+  } catch (_) {}
+  return 'dev';
+}
+
+const DATA_VERSION = dataVersion();
+const dataUrl = (path) => `${path}?v=${encodeURIComponent(DATA_VERSION)}`;
+
 const STATIC_URLS = {
-  meta: '/data/meta.json',
-  songs: '/data/songs.json',
-  streams: '/data/streams.json',
+  meta: dataUrl('/data/meta.json'),
+  songs: dataUrl('/data/songs.json'),
+  streams: dataUrl('/data/streams.json'),
 };
 const FALLBACK_URL = '/api/data';
 
@@ -259,7 +275,7 @@ function hydratePayload(payload) {
 }
 
 async function fetchJson(url) {
-  const res = await fetch(url);
+  const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
   return res.json();
 }

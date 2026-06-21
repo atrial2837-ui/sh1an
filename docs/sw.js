@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 const ASSET_CACHE = `sh1an-assets-${CACHE_VERSION}`;
 const DATA_CACHE  = `sh1an-data-${CACHE_VERSION}`;
 
@@ -28,9 +28,9 @@ self.addEventListener('fetch', event => {
 
   const path = url.pathname;
 
-  // /data/*.json → stale-while-revalidate（即座に返しつつ裏で更新）
+  // /data/*.json → network-first（歌枠データ更新を即時反映）
   if (path.startsWith('/data/') && path.endsWith('.json')) {
-    event.respondWith(staleWhileRevalidate(request, DATA_CACHE));
+    event.respondWith(networkFirst(request, DATA_CACHE));
     return;
   }
 

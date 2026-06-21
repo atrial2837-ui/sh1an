@@ -1,4 +1,4 @@
-import{d as g,e as u}from"./chunk-AW5KTZNU.js";import{E as y,F as S,J as w,P as v,a as h,c,p as f,q as k,r as T,s as x,t as H,u as L}from"./chunk-Y7E4FXHW.js";function V(){let{songs:a,streams:s}=u.data,n=[...a].sort((b,$)=>$.count-b.count).slice(0,5),i=n[0]?.count||1,d=s.slice(0,5),l=g(),e=x(a,l),t=h("#panel-dashboard"),o=L(s,l),p=`
+import{d as g,e as u}from"./chunk-AW5KTZNU.js";import{E as y,F as S,J as w,P as v,a as h,c,p as f,q as k,r as T,s as x,t as H,u as L}from"./chunk-GPIKXWRQ.js";function V(){let{songs:a,streams:s}=u.data,n=[...a].sort((b,$)=>$.count-b.count).slice(0,5),i=n[0]?.count||1,d=s.slice(0,5),l=g(),e=x(a,l),t=h("#panel-dashboard"),o=L(s,l),p=`
     <div class="card dashboard-card dashboard-activity-card">
       <div class="card-title">${v("analytics")} \u4ECA\u6708\u306E\u6D3B\u52D5</div>
       <div class="dashboard-metric-list">

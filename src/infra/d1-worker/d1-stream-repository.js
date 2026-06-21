@@ -104,6 +104,23 @@ export class D1StreamRepository {
   }
 
   /**
+   * @param {number} channelId
+   * @param {number} sourceIndex
+   * @returns {Promise<Stream|null>}
+   */
+  async findByChannelSourceIndex(channelId, sourceIndex) {
+    return this.client.queryFirst(
+      `SELECT id, channel_id, source_index, streamed_on, title, url, url_key, song_count, created_at
+       FROM streams
+       WHERE channel_id = ? AND source_index = ?
+       ORDER BY streamed_on DESC, id DESC
+       LIMIT 1`,
+      channelId,
+      sourceIndex,
+    );
+  }
+
+  /**
    * 全歌枠を取得。
    * 根拠: data.js:226 `SELECT * FROM streams ORDER BY channel_id ASC, streamed_on DESC, id ASC`。
    * BuildDatasetUseCase が全歌枠を一括取得する。
@@ -133,5 +150,26 @@ export class D1StreamRepository {
       channelId,
     );
     return row?.next_index ?? 1;
+  }
+
+  /**
+   * @param {number} id
+   * @param {{ streamedOn?: string, title?: string|null }} patch
+   */
+  async updateMetadata(id, patch) {
+    const current = await this.client.queryFirst(
+      `SELECT streamed_on, title FROM streams WHERE id = ?`,
+      id,
+    );
+    if (!current) return null;
+    return this.client.queryFirst(
+      `UPDATE streams
+       SET streamed_on = ?, title = ?
+       WHERE id = ?
+       RETURNING id, channel_id, source_index, streamed_on, title, url, url_key, song_count, created_at`,
+      patch.streamedOn ?? current.streamed_on,
+      patch.title === undefined ? current.title : patch.title,
+      id,
+    );
   }
 }

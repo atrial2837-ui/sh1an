@@ -15,6 +15,7 @@ import { previewStream } from '../../usecase/preview-stream.js';
 import { addStream } from '../../usecase/add-stream.js';
 import { searchSongs } from '../../usecase/search-songs.js';
 import { saveSongMetadata } from '../../usecase/save-song-metadata.js';
+import { updateStreamMetadata } from '../../usecase/update-stream-metadata.js';
 import { syncKeyReferenceCsv } from '../../usecase/sync-key-reference-csv.js';
 import { syncKeyReferenceUrl } from '../../usecase/sync-key-reference-url.js';
 import { loadAdminStatus } from '../../usecase/load-admin-status.js';
@@ -94,6 +95,12 @@ export function buildAdminRouter(options) {
     const body = (await readJsonBody(ctx.request)) || {};
     const result = await addStream(getDeps(ctx), body);
     return jsonResponse(result);
+  }));
+
+  router.post(p('/streams/metadata'), auth(async (ctx) => {
+    const body = (await readJsonBody(ctx.request)) || {};
+    const result = await updateStreamMetadata(getDeps(ctx), body);
+    return jsonResponse({ ok: true, stream: result.stream });
   }));
 
   router.post(p('/songs/metadata'), auth(async (ctx) => {

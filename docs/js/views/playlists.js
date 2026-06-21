@@ -16,6 +16,8 @@ import { icon } from '../icons.js';
 
 const STORAGE_KEY = 'sh1an-playlists';
 const MUSIC_CACHE_KEY = 'sh1an-music-videos-cache-v2';
+const REQUEST_CACHE_KEY = 'sh1an-song-requests-cache-v1';
+const REQUEST_LOCAL_KEY = 'sh1an-song-requests-local-v1';
 const PER_PAGE    = 24; // 4列 × 6行
 
 /* ── モジュールレベルの状態（サブタブ / ページ） ─────────────────────────── */
@@ -31,6 +33,9 @@ let _musicQuery   = '';
 let _musicSearchDebounce = null;
 let _musicSelectMode = false;        // 歌みた・オリ曲: まとめて追加の選択モード
 const _musicSelection = new Set();   // 選択中の動画 id
+let _requestItems = null;
+let _requestLoading = false;
+let _requestError = '';
 
 /* ── データ操作（localStorage） ─────────────────────────────────────────── */
 
@@ -127,19 +132,28 @@ export function renderPlaylists() {
           マイリスト
           <span class="pl-subtab-count">${getPlaylists().length}</span>
         </button>
+        <button class="pl-subtab${_activeSubTab === 'requests' ? ' active' : ''}"
+          data-pl-subtab="requests" role="tab"
+          aria-selected="${_activeSubTab === 'requests'}">
+          リクエスト
+          <span class="pl-subtab-count">${_requestItems?.length ?? ''}</span>
+        </button>
       </nav>
       <div class="pl-subtab-body" id="pl-subtab-body">
         ${_activeSubTab === 'all-streams'
           ? _renderAllStreams(allStreams, _streamPage)
           : _activeSubTab === 'music'
             ? _renderMusicSubtab()
-            : _renderMyPlaylists(allStreams)}
+            : _activeSubTab === 'my-playlists'
+              ? _renderMyPlaylists(allStreams)
+              : _renderSongRequests()}
       </div>
     </div>
   `;
 
   // music サブタブ表示中は常にローダーを起動（未取得なら fetch、取得済みなら結果同期）
   if (_activeSubTab === 'music') _loadAndRenderMusic();
+  if (_activeSubTab === 'requests') _loadAndRenderRequests();
 
   // 検索欄のフォーカス・カーソル位置を復元
   if (searchHadFocus) {
@@ -255,6 +269,10 @@ export function renderPlaylists() {
 
     if (_activeSubTab === 'my-playlists') {
       _handleMyPlaylistsClick(e, allStreams);
+    }
+
+    if (_activeSubTab === 'requests') {
+      _handleSongRequestsClick(e);
     }
   };
 
@@ -777,6 +795,336 @@ function _openYouTubePlaylist(videoIds) {
     url = `https://www.youtube.com/watch_videos?video_ids=${ids.join(',')}`;
   }
   window.open(url, '_blank', 'noopener noreferrer');
+}
+
+/* ── 共有楽曲リクエスト ────────────────────────────────────────────────── */
+
+function _renderSongRequests() {
+  const items = _requestItems || _readRequestCache();
+  const message = _requestError
+    ? `<p class="song-request-status is-error">${escapeHtml(_requestError)}</p>`
+    : _requestLoading
+      ? `<p class="song-request-status">共有リストを読み込んでいます…</p>`
+      : '';
+
+  return `
+    <section class="song-request-board" aria-label="共有楽曲リクエスト">
+      <div class="song-request-head">
+        <div>
+          <p class="song-request-kicker">SHARED REQUEST</p>
+          <h3>歌ってほしい曲</h3>
+        </div>
+        <p class="song-request-copy">曲名だけでも追加できます。ほかの人のリクエストには「自分も聴きたい」で参加できます。</p>
+      </div>
+      <form class="song-request-form" id="song-request-form">
+        <label>
+          <span>SONG TITLE</span>
+          <input id="song-request-title" name="title" maxlength="120" required placeholder="例：月光">
+        </label>
+        <label>
+          <span>ARTIST</span>
+          <input id="song-request-artist" name="artist" maxlength="120" placeholder="例：キタニタツヤ × はるまきごはん">
+        </label>
+        <label>
+          <span>NOTE</span>
+          <textarea id="song-request-note" name="note" maxlength="240" rows="3" placeholder="おすすめ理由・聴きたい雰囲気など"></textarea>
+        </label>
+        <label>
+          <span>NAME</span>
+          <input id="song-request-name" name="requesterName" maxlength="40" placeholder="任意">
+        </label>
+        <button class="song-request-submit" type="button" data-song-request-submit>
+          ${icon('plus')} リクエストを追加
+        </button>
+      </form>
+      ${message}
+      <div class="song-request-list" id="song-request-list">
+        ${_renderSongRequestList(items)}
+      </div>
+    </section>`;
+}
+
+function _renderSongRequestList(items) {
+  if (!items.length) {
+    return `
+      <div class="pl-empty-state song-request-empty">
+        <p>まだ共有リクエストがありません</p>
+        <p class="pl-empty-hint">最初の1曲を追加して、歌ってほしい曲リストを育てられます</p>
+      </div>`;
+  }
+  return items.map(item => {
+    const voted = _hasRequestVote(item.id);
+    const status = item.status || 'unregistered';
+    return `
+      <article class="song-request-item">
+        <div class="song-request-rank">
+          <span>${Number(item.voteCount || 0)}</span>
+          <small>votes</small>
+        </div>
+        <div class="song-request-main">
+          <h4>${escapeHtml(item.title || '—')}</h4>
+          <p>${escapeHtml(item.artist || 'アーティスト未指定')}</p>
+          ${item.note ? `<blockquote>${escapeHtml(item.note)}</blockquote>` : ''}
+          <div class="song-request-meta">
+            <span>${escapeHtml(item.requesterName || '匿名')}</span>
+            <span>${escapeHtml(_requestDateText(item.createdAt))}</span>
+          </div>
+        </div>
+        <button class="song-request-vote${voted ? ' is-voted' : ''}" type="button"
+          data-song-request-vote="${escapeHtml(String(item.id))}" ${voted ? 'disabled' : ''}>
+          ${voted ? '参加済み' : '自分も聴きたい'}
+        </button>
+        <div class="song-request-tools">
+          <div class="song-request-status-tabs" aria-label="歌唱ステータス">
+            ${_requestStatusButton(item.id, status, 'singable', '歌える')}
+            ${_requestStatusButton(item.id, status, 'practicing', '練習中')}
+            ${_requestStatusButton(item.id, status, 'unregistered', '未登録')}
+          </div>
+          <button class="song-request-mini" type="button" data-song-request-edit="${escapeHtml(String(item.id))}">編集</button>
+          <button class="song-request-mini danger" type="button" data-song-request-delete="${escapeHtml(String(item.id))}">削除</button>
+        </div>
+      </article>`;
+  }).join('');
+}
+
+function _requestStatusButton(id, current, value, label) {
+  return `<button class="song-request-status-btn${current === value ? ' active' : ''}" type="button"
+    data-song-request-status="${escapeHtml(String(id))}" data-status="${value}">${label}</button>`;
+}
+
+async function _loadAndRenderRequests() {
+  if (_requestLoading) return;
+  _requestLoading = true;
+  _requestError = '';
+  _renderRequestsInPlace();
+  try {
+    const items = await _fetchSongRequests();
+    _requestItems = items;
+    _writeRequestCache(items);
+  } catch (_) {
+    _requestItems = _readLocalRequests();
+    _requestError = _requestItems.length
+      ? '共有APIに接続できないため、この端末の仮リクエストを表示しています'
+      : '共有APIに接続できません。デプロイ環境またはD1設定を確認してください';
+  } finally {
+    _requestLoading = false;
+    _renderRequestsInPlace();
+  }
+}
+
+function _renderRequestsInPlace() {
+  if (_activeSubTab !== 'requests') return;
+  const body = $('#pl-subtab-body');
+  if (body) body.innerHTML = _renderSongRequests();
+}
+
+async function _handleSongRequestsClick(e) {
+  const submit = e.target.closest('[data-song-request-submit]');
+  if (submit) {
+    await _submitSongRequest(submit);
+    return;
+  }
+  const vote = e.target.closest('[data-song-request-vote]');
+  if (vote && !vote.disabled) {
+    await _voteSongRequest(vote);
+    return;
+  }
+  const status = e.target.closest('[data-song-request-status]');
+  if (status) {
+    await _updateSongRequest(status.dataset.songRequestStatus, { status: status.dataset.status });
+    return;
+  }
+  const edit = e.target.closest('[data-song-request-edit]');
+  if (edit) {
+    await _editSongRequest(Number(edit.dataset.songRequestEdit));
+    return;
+  }
+  const del = e.target.closest('[data-song-request-delete]');
+  if (del) {
+    await _deleteSongRequest(Number(del.dataset.songRequestDelete));
+  }
+}
+
+async function _submitSongRequest(button) {
+  const form = $('#song-request-form');
+  const title = $('#song-request-title')?.value?.trim() || '';
+  const artist = $('#song-request-artist')?.value?.trim() || '';
+  const note = $('#song-request-note')?.value?.trim() || '';
+  const requesterName = $('#song-request-name')?.value?.trim() || '';
+  if (!title) {
+    _requestError = '曲名を入力してください';
+    _renderRequestsInPlace();
+    $('#song-request-title')?.focus();
+    return;
+  }
+  button.disabled = true;
+  button.textContent = '追加中…';
+  try {
+    const created = await _postSongRequest({ title, artist, note, requesterName });
+    _requestItems = [created, ...(_requestItems || _readRequestCache())]
+      .sort((a, b) => (b.voteCount || 0) - (a.voteCount || 0) || String(b.createdAt).localeCompare(String(a.createdAt)));
+    _writeRequestCache(_requestItems);
+    _requestError = '';
+    form?.reset();
+  } catch (_) {
+    const local = _addLocalRequest({ title, artist, note, requesterName });
+    _requestItems = [local, ..._readLocalRequests().filter(item => item.id !== local.id)];
+    _requestError = '共有APIに接続できないため、この端末の仮リクエストとして保存しました';
+  } finally {
+    _renderRequestsInPlace();
+  }
+}
+
+async function _voteSongRequest(button) {
+  const id = Number(button.dataset.songRequestVote);
+  if (!id || _hasRequestVote(id)) return;
+  button.disabled = true;
+  button.textContent = '反映中…';
+  try {
+    const updated = await _postSongRequestVote(id);
+    _markRequestVoted(id);
+    _requestItems = (_requestItems || _readRequestCache()).map(item => item.id === id ? updated : item)
+      .sort((a, b) => (b.voteCount || 0) - (a.voteCount || 0) || String(b.createdAt).localeCompare(String(a.createdAt)));
+    _writeRequestCache(_requestItems);
+    _requestError = '';
+  } catch (_) {
+    _markRequestVoted(id);
+    _requestItems = (_requestItems || _readLocalRequests()).map(item =>
+      item.id === id ? { ...item, voteCount: Number(item.voteCount || 0) + 1 } : item);
+    _writeLocalRequests(_requestItems);
+    _requestError = '共有APIに接続できないため、この端末上で投票を反映しました';
+  } finally {
+    _renderRequestsInPlace();
+  }
+}
+
+async function _editSongRequest(id) {
+  const item = (_requestItems || _readRequestCache()).find(x => Number(x.id) === Number(id));
+  if (!item) return;
+  const title = prompt('リクエスト曲', item.title || '');
+  if (title === null) return;
+  const artist = prompt('アーティスト名', item.artist || '');
+  if (artist === null) return;
+  await _updateSongRequest(id, { title, artist });
+}
+
+async function _deleteSongRequest(id) {
+  const item = (_requestItems || _readRequestCache()).find(x => Number(x.id) === Number(id));
+  if (!item || !confirm(`「${item.title}」を削除しますか？`)) return;
+  try {
+    await fetch(`/api/song-requests/${encodeURIComponent(id)}`, { method: 'DELETE' }).then(res => {
+      if (!res.ok) throw new Error(`delete ${res.status}`);
+    });
+  } catch (_) {
+    _writeLocalRequests(_readLocalRequests().filter(x => Number(x.id) !== Number(id)));
+    _requestError = '共有APIに接続できないため、この端末上で削除しました';
+  }
+  _requestItems = (_requestItems || _readRequestCache()).filter(x => Number(x.id) !== Number(id));
+  _writeRequestCache(_requestItems);
+  _renderRequestsInPlace();
+}
+
+async function _updateSongRequest(id, patch) {
+  try {
+    const res = await fetch(`/api/song-requests/${encodeURIComponent(id)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    });
+    if (!res.ok) throw new Error(`update ${res.status}`);
+    const json = await res.json();
+    _requestItems = (_requestItems || _readRequestCache()).map(item =>
+      Number(item.id) === Number(id) ? json.item : item);
+    _writeRequestCache(_requestItems);
+    _requestError = '';
+  } catch (_) {
+    _requestItems = (_requestItems || _readLocalRequests()).map(item =>
+      Number(item.id) === Number(id) ? { ...item, ...patch } : item);
+    _writeLocalRequests(_requestItems);
+    _requestError = '共有APIに接続できないため、この端末上で変更しました';
+  }
+  _renderRequestsInPlace();
+}
+
+async function _fetchSongRequests() {
+  const res = await fetch('/api/song-requests?limit=80', { cache: 'no-store' });
+  if (!res.ok) throw new Error(`song-requests ${res.status}`);
+  const json = await res.json();
+  return Array.isArray(json?.items) ? json.items : [];
+}
+
+async function _postSongRequest(input) {
+  const res = await fetch('/api/song-requests', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) throw new Error(`song-requests ${res.status}`);
+  const json = await res.json();
+  return json.item;
+}
+
+async function _postSongRequestVote(id) {
+  const res = await fetch(`/api/song-requests/${encodeURIComponent(id)}/vote`, { method: 'POST' });
+  if (!res.ok) throw new Error(`song-requests vote ${res.status}`);
+  const json = await res.json();
+  return json.item;
+}
+
+function _readRequestCache() {
+  try {
+    const json = JSON.parse(localStorage.getItem(REQUEST_CACHE_KEY) || 'null');
+    return Array.isArray(json?.items) ? json.items : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function _writeRequestCache(items) {
+  try { localStorage.setItem(REQUEST_CACHE_KEY, JSON.stringify({ items, cachedAt: Date.now() })); } catch (_) {}
+}
+
+function _readLocalRequests() {
+  try { return JSON.parse(localStorage.getItem(REQUEST_LOCAL_KEY) || '[]'); } catch (_) { return []; }
+}
+
+function _writeLocalRequests(items) {
+  try { localStorage.setItem(REQUEST_LOCAL_KEY, JSON.stringify(items)); } catch (_) {}
+}
+
+function _addLocalRequest(input) {
+  const item = {
+    id: Date.now(),
+    title: input.title,
+    artist: input.artist || '',
+    note: input.note || null,
+    requesterName: input.requesterName || null,
+    status: 'unregistered',
+    voteCount: 1,
+    createdAt: new Date().toISOString(),
+  };
+  const items = [item, ..._readLocalRequests()];
+  _writeLocalRequests(items);
+  return item;
+}
+
+function _requestVoteKey(id) {
+  return `sh1an-song-request-voted:${id}`;
+}
+
+function _hasRequestVote(id) {
+  try { return localStorage.getItem(_requestVoteKey(id)) === '1'; } catch (_) { return false; }
+}
+
+function _markRequestVoted(id) {
+  try { localStorage.setItem(_requestVoteKey(id), '1'); } catch (_) {}
+}
+
+function _requestDateText(value) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value).slice(0, 10);
+  return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
 }
 
 /* ── マイリスト ────────────────────────────────────────────────────────── */

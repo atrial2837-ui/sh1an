@@ -76,3 +76,34 @@ CREATE TABLE IF NOT EXISTS song_channel_stats (
 );
 
 CREATE INDEX IF NOT EXISTS idx_song_channel_stats_channel ON song_channel_stats(channel_id, song_id);
+
+CREATE TABLE IF NOT EXISTS community_timestamps (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  channel_code TEXT NOT NULL,
+  stream_index INTEGER NOT NULL,
+  song_index INTEGER NOT NULL,
+  time_seconds INTEGER NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  submitter_note TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  reviewed_at TEXT,
+  reviewer_note TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_ct_lookup ON community_timestamps(channel_code, stream_index, status);
+CREATE INDEX IF NOT EXISTS idx_ct_status_created ON community_timestamps(status, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS song_requests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  artist TEXT NOT NULL DEFAULT '',
+  note TEXT,
+  requester_name TEXT,
+  status TEXT NOT NULL DEFAULT 'unregistered',
+  vote_count INTEGER NOT NULL DEFAULT 1 CHECK (vote_count >= 0),
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_song_requests_public
+  ON song_requests(vote_count DESC, created_at DESC);

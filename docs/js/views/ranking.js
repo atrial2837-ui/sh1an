@@ -28,25 +28,31 @@ export function renderRanking() {
 
   panel.innerHTML = `
     <div class="section-header">
-      <h2>${icon('rank')} 歌唱回数ランキング</h2>
+      <h2>${icon('rank')} Ranking Board</h2>
       <span class="count-pill">${songs.length}曲中</span>
     </div>
-    ${renderPeriodSelector(streams, period, streamsLoaded)}
+    <div class="ranking-toolbar">
+      ${renderPeriodSelector(streams, period, streamsLoaded)}
+      ${renderRankingSummary(sorted, periodData)}
+    </div>
     ${periodData ? renderPeriodHeader(periodData) : ''}
-    ${!periodData ? `
-      <div class="podium">
-        ${visible.slice(0, 3).map((s, i) => podiumCard(s, i)).join('')}
-      </div>
-    ` : (periodData.counts.size === 0 ? `
-      <div class="empty-state">この期間に歌唱記録がありません 🐠</div>
-    ` : '')}
+    ${periodData?.counts.size === 0 ? `
+      <div class="empty-state">この期間に歌唱記録がありません</div>
+    ` : ''}
     ${periodData?.counts.size !== 0 || !periodData ? `
-      <div class="song-list${periodData ? ' has-delta' : ''}">
+      <div class="ranking-table-head${periodData ? ' has-delta' : ''}">
+        <span>RANK</span>
+        <span>SONG DETAILS</span>
+        <span>ARTIST</span>
+        <span>${periodData ? 'COUNT / CHANGE' : 'COUNT'}</span>
+        <span>${periodData ? 'TAGS' : 'HISTORY'}</span>
+      </div>
+      <div class="song-list ranking-list${periodData ? ' has-delta' : ''}">
         ${visible.map((song, i) => rowHtml(song, i + 1, periodData)).join('')}
       </div>
       ${limit < sorted.length ? `
         <div class="timeline-controls">
-          <button class="load-more-btn" id="rank-more">▼ もっと表示 (残り${sorted.length - limit}曲)</button>
+          <button class="load-more-btn" id="rank-more">MORE (${sorted.length - limit})</button>
         </div>` : ''}
     ` : ''}
   `;
@@ -113,10 +119,10 @@ export function renderRanking() {
 
 function renderPeriodSelector(streams, currentPeriod, streamsLoaded) {
   const periods = [
-    { key: 'all',        label: '全期間' },
-    { key: 'month',      label: '今月' },
-    { key: 'prev-month', label: '先月' },
-    { key: 'week',       label: '直近7日' },
+    { key: 'all',        label: 'ALL TIME' },
+    { key: 'month',      label: 'THIS MONTH' },
+    { key: 'prev-month', label: 'LAST MONTH' },
+    { key: 'week',       label: '7 DAYS' },
   ];
   const months = getAvailableMonths(streams);
   const currentMonth = state.rankingMonth || '';
@@ -129,11 +135,11 @@ function renderPeriodSelector(streams, currentPeriod, streamsLoaded) {
           type="button"
           data-ranking-period="${p.key}"
           ${(!streamsLoaded && p.key !== 'all') ? 'disabled title="配信データ読み込み中"' : ''}
-        >${p.key === 'all' ? p.label : (streamsLoaded ? p.label : p.label + ' …')}</button>
+        >${p.key === 'all' ? p.label : (streamsLoaded ? p.label : p.label + ' ...')}</button>
       `).join('')}
       ${months.length && streamsLoaded ? `
         <select id="ranking-month-select" class="select-input period-month-select" title="月を指定">
-          <option value="">月を選択…</option>
+          <option value="">SELECT MONTH</option>
           ${months.map(m => {
             const [y, mo] = m.split('-');
             const label = `${y}年${Number(mo)}月`;
@@ -143,7 +149,7 @@ function renderPeriodSelector(streams, currentPeriod, streamsLoaded) {
       ` : ''}
       ${currentPeriod !== 'all' && months.length && streamsLoaded ? `
         <select id="ranking-compare-select" class="select-input period-month-select" title="増減（↑↓）の比較先を選ぶ">
-          <option value="">比較: 直前の期間（自動）</option>
+          <option value="">COMPARE: AUTO</option>
           ${months.map(m => {
             const [y, mo] = m.split('-');
             const label = `比較: ${y}年${Number(mo)}月`;
@@ -151,7 +157,7 @@ function renderPeriodSelector(streams, currentPeriod, streamsLoaded) {
           }).join('')}
         </select>
         ${currentPeriod === 'month-select' && currentMonth && state.rankingCompareMonth ? `
-          <button id="ranking-swap-compare" class="period-btn ranking-swap-btn" type="button" title="表示月と比較月を入れ替える">↔ 入れ替え</button>
+          <button id="ranking-swap-compare" class="period-btn ranking-swap-btn" type="button" title="表示月と比較月を入れ替える">SWAP</button>
         ` : ''}
       ` : ''}
     </div>
@@ -161,6 +167,29 @@ function renderPeriodSelector(streams, currentPeriod, streamsLoaded) {
 // ──────────────────────────────────────────────────────────────────────────────
 // 期間ヘッダー
 // ──────────────────────────────────────────────────────────────────────────────
+
+function renderRankingSummary(sorted, periodData) {
+  const leader = sorted[0];
+  const total = sorted.reduce((sum, song) => sum + (periodData ? (song.periodCount || 0) : (song.count || 0)), 0);
+  const leaderCount = leader ? (periodData ? leader.periodCount : leader.count) : 0;
+  return `
+    <div class="ranking-summary">
+      <div class="ranking-summary-item">
+        <span>ENTRIES</span>
+        <strong>${sorted.length}</strong>
+      </div>
+      <div class="ranking-summary-item">
+        <span>TOTAL SINGS</span>
+        <strong>${total}</strong>
+      </div>
+      <div class="ranking-summary-item ranking-summary-leader">
+        <span>TOP SONG</span>
+        <strong>${leader ? escapeHtml(leader.title) : '-'}</strong>
+        <small>${leaderCount}回</small>
+      </div>
+    </div>
+  `;
+}
 
 function renderPeriodHeader(periodData) {
   const { label, prevLabel, counts, totalSongs } = periodData;
@@ -308,27 +337,42 @@ function rowHtml(song, displayRank, periodData) {
   const rank      = periodData ? song.periodRank  : (song.rank ?? displayRank);
   const rankClass = rank === 1 ? 'r1' : rank === 2 ? 'r2' : rank === 3 ? 'r3' : '';
 
-  const sideContent = periodData
+  const countContent = periodData
     ? `<div class="count">${count}<small>回</small></div>
        <div class="rank-delta ${deltaClass(song)}">${deltaLabel(song)}</div>`
-    : `<div class="count">${count}<small>回</small></div>
-       <div class="last">${song.lastSung
-         ? `<span class="last-date">${fmtDate(song.lastSung)}</span><span class="badge ${daysClass(song.daysSinceLast)}">${song.daysSinceLast}日前</span>`
-         : '<span class="last-date">未披露</span><span class="badge never">—</span>'
-       }</div>`;
+    : `<div class="count">${count}<small>回</small></div>`;
+  const historyContent = periodData
+    ? tagsHtml(song)
+    : (song.lastSung
+      ? `<span class="last-date">${fmtDate(song.lastSung)}</span><span class="badge ${daysClass(song.daysSinceLast)}">${song.daysSinceLast}日前</span>`
+      : '<span class="last-date">未披露</span><span class="badge never">-</span>');
 
   return `
-    <div class="song-row" data-songkey="${escapeHtml(song.key)}" data-songtitle="${escapeHtml(song.title)}" data-songartist="${escapeHtml(song.artist)}" title="クリックで詳細を表示">
+    <div class="song-row ranking-row" data-songkey="${escapeHtml(song.key)}" data-songtitle="${escapeHtml(song.title)}" data-songartist="${escapeHtml(song.artist)}" title="クリックで詳細を表示">
       <div class="rank ${rankClass}">${rank}</div>
       <div class="info">
         <div class="title">${escapeHtml(song.title)}</div>
+      </div>
+      <div class="ranking-artist-cell">
         <button class="artist artist-search-btn" type="button" data-artist-search="${escapeHtml(song.artist)}">${escapeHtml(song.artist)}</button>
       </div>
-      <div class="song-row-side">
-        ${sideContent}
+      <div class="song-row-side ranking-count-cell">
+        ${countContent}
+      </div>
+      <div class="ranking-history-cell">
+        ${historyContent}
       </div>
     </div>
   `;
+}
+
+function tagsHtml(song) {
+  const tags = [];
+  if (song.genre) tags.push(`<span class="genre-badge">${escapeHtml(song.genre)}</span>`);
+  for (const tag of (song.tags || []).slice(0, 2)) {
+    tags.push(`<span class="tag-badge">${escapeHtml(tag)}</span>`);
+  }
+  return tags.length ? tags.join('') : '<span class="muted">-</span>';
 }
 
 function deltaClass(song) {
