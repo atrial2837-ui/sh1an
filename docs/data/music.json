@@ -8,11 +8,25 @@
   ],
   "videos": [
     {
+      "id": "mv_9_hHoQwTJMA",
+      "title": "Repray - sh1an(Official Music Video)",
+      "type": "original",
+      "url": "https://www.youtube.com/watch?v=9_hHoQwTJMA",
+      "publishedAt": "2026-03-21"
+    },
+    {
       "id": "mv_F0_y8UZ5S3E",
       "title": "ONE/DUSTCELL - sh1an(cover)",
       "type": "cover",
       "url": "https://www.youtube.com/watch?v=F0_y8UZ5S3E",
       "publishedAt": "2026-03-03"
+    },
+    {
+      "id": "mv_r4Bq7g6uchg",
+      "title": "NUll (feat. U/0) - sh1an(Official Music Video)",
+      "type": "original",
+      "url": "https://www.youtube.com/watch?v=r4Bq7g6uchg",
+      "publishedAt": "2026-02-13"
     },
     {
       "id": "mv_MIhCxk92p6Q",
