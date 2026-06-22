@@ -1282,27 +1282,24 @@ function _svSaveTs(stream, ts) {
 
 let _svCurSongIdx = -1; // 現在再生中の曲インデックス
 
-function _svSongRow(song, i, ts, currentIdx) {
+function _svSongRow(song, i, _ts, currentIdx) {
   const isCurrent = i === currentIdx;
-  const time = ts[i];
-  const badge = time != null
-    ? `<button class="sv-ts-badge" data-idx="${i}" data-action="seek" title="${escapeHtml(_fmtTs(time))} に移動">${escapeHtml(_fmtTs(time))}</button><button class="sv-ts-del" data-idx="${i}" data-action="del-ts" aria-label="タイムスタンプ削除">${icon('close')}</button>`
-    : '';
-  // コミュニティタイムスタンプ（承認済み）
-  const ctsItems = _svCommunityTs[i] || [];
-  const ctsBadges = ctsItems.map(ct =>
-    `<button class="sv-cts-badge" data-idx="${i}" data-action="cts-seek" data-cts-seconds="${ct.timeSeconds}" title="みんなのタイムスタンプ: ${escapeHtml(_fmtTs(ct.timeSeconds))}">${escapeHtml(_fmtTs(ct.timeSeconds))}</button>`
-  ).join('');
-  const proposeBtn = `<button class="sv-cts-propose" data-idx="${i}" data-action="cts-propose" type="button">+ 提案</button>`;
-  const ctsRow = `<div class="sv-cts-row">${ctsBadges}${proposeBtn}</div>`;
+  // 公式タイムスタンプ = 管理者登録（承認済み）の先頭。個人メモ編集は廃止し、
+  // 表示は公式のみ。ズレている場合はユーザーは「修正申請」のみ行える。
+  const official = (_svCommunityTs[i] || [])[0];
+  const seek = official != null
+    ? `<button class="sv-ts-badge" data-idx="${i}" data-action="seek" data-seconds="${official.timeSeconds}" title="${escapeHtml(_fmtTs(official.timeSeconds))} に移動">${escapeHtml(_fmtTs(official.timeSeconds))}</button>`
+    : '<span class="sv-ts-none" aria-hidden="true">--:--</span>';
   return `<div class="sv-song${isCurrent ? ' is-current' : ''}" data-idx="${i}">
     <span class="sv-song-num">${i + 1}</span>
     <div class="sv-song-info">
       <span class="sv-song-title">${escapeHtml(song.title)}</span>
       <span class="sv-song-artist">${escapeHtml(song.artist)}</span>
     </div>
-    <div class="sv-song-actions">${badge}<button class="sv-ts-set" data-idx="${i}" data-action="set-ts" title="現在の再生時刻をタイムスタンプに記録">${icon('time')} メモ</button></div>
-    ${ctsRow}
+    <div class="sv-song-actions">
+      ${seek}
+      <button class="sv-ts-report" data-idx="${i}" data-action="cts-propose" type="button" title="タイムスタンプの修正を申請">修正申請</button>
+    </div>
   </div>`;
 }
 
@@ -1362,9 +1359,9 @@ function _svShowProposeModal(stream, songIdx, songTitle) {
   modal.id = 'sv-cts-modal';
   modal.className = 'sv-cts-modal-overlay';
   modal.innerHTML = `
-    <div class="sv-cts-modal-box" role="dialog" aria-modal="true" aria-label="タイムスタンプを提案">
+    <div class="sv-cts-modal-box" role="dialog" aria-modal="true" aria-label="タイムスタンプの修正を申請">
       <div class="sv-cts-modal-head">
-        <span class="sv-cts-modal-title">タイムスタンプを提案</span>
+        <span class="sv-cts-modal-title">タイムスタンプの修正を申請</span>
         <button class="sv-cts-modal-close" type="button" aria-label="閉じる">${icon('close')}</button>
       </div>
       <p class="sv-cts-modal-song">${escapeHtml(songTitle)}</p>
@@ -1376,9 +1373,9 @@ function _svShowProposeModal(stream, songIdx, songTitle) {
         コメント（任意・200文字以内）
         <input class="sv-cts-modal-input" id="sv-cts-note-input" type="text" maxlength="200" placeholder="">
       </label>
-      <p class="sv-cts-modal-hint">提案は管理者の審査後に公開されます。</p>
+      <p class="sv-cts-modal-hint">修正申請は管理者の審査後に反映されます。</p>
       <div class="sv-cts-modal-btns">
-        <button class="sv-cts-modal-submit" id="sv-cts-submit" type="button">提案する</button>
+        <button class="sv-cts-modal-submit" id="sv-cts-submit" type="button">申請する</button>
         <button class="sv-cts-modal-cancel" type="button">キャンセル</button>
       </div>
       <p class="sv-cts-modal-status" id="sv-cts-status" hidden></p>
@@ -2491,21 +2488,11 @@ function initStreamViewer() {
             <span>セットリスト</span>
             <div class="sv-panel-head-right">
               <button class="sv-setlist-toggle" id="sv-setlist-toggle" type="button" aria-expanded="true">畳む</button>
-              <button class="sv-import-toggle" id="sv-import-toggle" type="button">一括入力</button>
-              <button class="sv-cts-bulk-btn" id="sv-cts-bulk-btn" type="button" hidden>セトリ登録</button>
+              <button class="sv-cts-bulk-btn" id="sv-cts-bulk-btn" type="button" hidden>まとめて修正申請</button>
               <span class="sv-song-count" id="sv-song-count"></span>
             </div>
           </div>
-          <div class="sv-import-area" id="sv-import-area" hidden>
-            <p class="sv-import-desc">タイムスタンプを1行に1つ入力（上から順に曲へ割り当て）</p>
-            <textarea class="sv-import-input" id="sv-import-input" rows="6"
-              placeholder="例:&#10;15:59&#10;21:12&#10;25:57&#10;1:08:13"></textarea>
-            <div class="sv-import-btns">
-              <button class="sv-import-apply" id="sv-import-apply" type="button">適用</button>
-              <button class="sv-import-cancel" id="sv-import-cancel" type="button">キャンセル</button>
-            </div>
-          </div>
-      <div class="sv-panel-hint">${icon('time')} で現在時刻をメモ ／ バッジをタップで移動</div>
+      <div class="sv-panel-hint">${icon('time')} 時刻バッジをタップで移動 ／ ズレは「修正申請」から</div>
           <div class="sv-setlist" id="sv-setlist"></div>
           <div class="sv-side-related" id="sv-side-related"></div>
         </div>
@@ -2567,36 +2554,7 @@ function initStreamViewer() {
     });
   });
 
-  // 一括インポート
-  $('#sv-import-toggle').addEventListener('click', () => {
-    const area = $('#sv-import-area');
-    if (!area) return;
-    area.hidden = !area.hidden;
-    if (!area.hidden) $('#sv-import-input')?.focus();
-  });
-  $('#sv-import-cancel').addEventListener('click', () => {
-    const area = $('#sv-import-area');
-    if (area) { area.hidden = true; }
-    const input = $('#sv-import-input');
-    if (input) input.value = '';
-  });
-  $('#sv-import-apply').addEventListener('click', () => {
-    const stream = el._currentStream;
-    if (!stream) return;
-    const input = $('#sv-import-input');
-    if (!input) return;
-    const lines = input.value.split('\n');
-    const times = lines.map(l => _parseTs(l)).filter(t => t !== null);
-    if (!times.length) return;
-    const ts = _svLoadTs(stream);
-    times.forEach((t, i) => { if (i < stream.songs.length) ts[i] = t; });
-    _svSaveTs(stream, ts);
-    _svRefreshSetlist($('#sv-setlist'), stream.songs, ts, _svCurSongIdx);
-    const area = $('#sv-import-area');
-    if (area) area.hidden = true;
-    input.value = '';
-  });
-
+  // 個人メモ用の一括インポートは廃止（タイムスタンプは管理者登録＋修正申請のみ）。
   $('#sv-cts-bulk-btn').addEventListener('click', () => {
     const stream = el._currentStream;
     if (stream) _svShowBulkProposeModal(stream);
@@ -2608,31 +2566,16 @@ function initStreamViewer() {
     const idx = parseInt(btn.dataset.idx, 10);
     const stream = el._currentStream;
     if (!stream) return;
-    const ts = _svLoadTs(stream);
 
     if (btn.dataset.action === 'seek') {
-      if (ts[idx] != null && _svPlayer?.seekTo) {
-        _svPlayer.seekTo(ts[idx], true);
-        try { _svPlayer.playVideo(); } catch (_) {}
-      }
-    } else if (btn.dataset.action === 'set-ts') {
-      const time = _svPlayer?.getCurrentTime?.();
-      if (time != null) {
-        ts[idx] = Math.floor(time);
-        _svSaveTs(stream, ts);
-        _svRefreshSetlist($('#sv-setlist'), stream.songs, ts, _svCurSongIdx);
-      }
-    } else if (btn.dataset.action === 'del-ts') {
-      delete ts[idx];
-      _svSaveTs(stream, ts);
-      _svRefreshSetlist($('#sv-setlist'), stream.songs, ts, _svCurSongIdx);
-    } else if (btn.dataset.action === 'cts-seek') {
-      const sec = Number(btn.dataset.ctsSeconds);
+      // 公式（承認済み）タイムスタンプへ移動
+      const sec = Number(btn.dataset.seconds);
       if (!isNaN(sec) && _svPlayer?.seekTo) {
         _svPlayer.seekTo(sec, true);
         try { _svPlayer.playVideo(); } catch (_) {}
       }
     } else if (btn.dataset.action === 'cts-propose') {
+      // 修正申請（管理者審査後に反映）
       const song = stream.songs[idx];
       _svShowProposeModal(stream, idx, song?.title || `曲 ${idx + 1}`);
     }
@@ -2889,13 +2832,20 @@ function openSongDetail(key) {
   ensureSongTags(song);
 
   title.textContent = song.title;
-  const refs = (song.streamRefs || []).slice(0, 8).map(ref => ({
-    ...ref,
-    thumbnail: youtubeThumb(ref.url),
-    thumbnailFallback: youtubeThumbFallback(ref.url),
-    thumbnailTiny: youtubeThumbTiny(ref.url),
-    detailKey: streamKey(ref),
-  }));
+  const refs = (song.streamRefs || []).slice(0, 8).map(ref => {
+    // ref.t（秒）= その配信枠でこの曲が歌われた開始位置。データ整備後に
+    // 各 streamRef へ付与される。存在すれば YouTube をその秒数で開く。
+    const startAt = Math.max(0, Math.floor(Number(ref.t) || 0));
+    return {
+      ...ref,
+      startAt,
+      watchUrl: _youtubeExternalUrl(ref.url, startAt),
+      thumbnail: youtubeThumb(ref.url),
+      thumbnailFallback: youtubeThumbFallback(ref.url),
+      thumbnailTiny: youtubeThumbTiny(ref.url),
+      detailKey: streamKey(ref),
+    };
+  });
   const tags = [
     song.genre,
     ...(song.seasonTags || []),
