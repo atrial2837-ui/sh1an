@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v6';
+const CACHE_VERSION = 'v9';
 const ASSET_CACHE = `sh1an-assets-${CACHE_VERSION}`;
 const DATA_CACHE  = `sh1an-data-${CACHE_VERSION}`;
 

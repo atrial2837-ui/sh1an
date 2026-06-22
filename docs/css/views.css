@@ -3416,11 +3416,7 @@ html {
 body {
   min-height: 100vh;
   padding: 64px 0 84px 80px;
-  background:
-    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(255,255,255,0.018) 1px, transparent 1px),
-    #101415;
-  background-size: 80px 80px;
+  background: linear-gradient(180deg, #14171c 0%, #0e1014 100%) fixed;
   color: var(--ink);
   font-family: "Space Grotesk", "Kanau Noto Sans JP", "Noto Sans JP", "Hiragino Sans", "BIZ UDPGothic", "Yu Gothic", "Meiryo", system-ui, sans-serif;
   letter-spacing: 0;
@@ -5512,45 +5508,48 @@ body:not(.sidebar-pinned):not(.sidebar-open):not(.profile-menu-open) .tabs:not(:
   }
 }
 
-/* Light theme keeps the #367ebf identity while separating it from the dark shell. */
+/* Light theme: a cohesive tonal scale built around the #367ebf identity. */
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg-1: #f6fbff;
-  --bg-2: #e7f3fb;
+  /* Deeper page base so white panels read clearly against it. */
+  --bg-1: #e7eff8;
+  --bg-2: #d3e3f2;
   --bg-radial-1: rgba(54, 126, 191, 0.12);
-  --bg-radial-2: rgba(111, 180, 230, 0.16);
+  --bg-radial-2: rgba(95, 168, 223, 0.15);
   --surface: #ffffff;
-  --surface-2: #f1f7fc;
-  --surface-3: #e4eef7;
-  --surface-glass: rgba(255, 255, 255, 0.95);
-  --border: rgba(54, 126, 191, 0.24);
-  --border-soft: rgba(54, 126, 191, 0.14);
-  --border-strong: rgba(54, 126, 191, 0.56);
-  --ink: #162433;
-  --ink-soft: #3f5368;
-  --ink-mute: #708399;
+  --surface-2: #eef4fb;
+  --surface-3: #e1ecf8;
+  --surface-glass: rgba(255, 255, 255, 0.96);
+  /* Stronger, clearly visible frames for separation. */
+  --border: #aecbe8;
+  --border-soft: #cadcef;
+  --border-strong: #7eb0de;
+  /* Light UI separates panels with elevation, not hard borders. */
+  --shadow-sm: 0 1px 2px rgba(20, 50, 80, 0.05), 0 4px 12px rgba(54, 126, 191, 0.07);
+  --shadow: 0 2px 6px rgba(20, 50, 80, 0.06), 0 12px 28px rgba(54, 126, 191, 0.10);
+  --shadow-lg: 0 8px 20px rgba(20, 50, 80, 0.08), 0 24px 48px rgba(54, 126, 191, 0.14);
+  --ink: #122336;
+  --ink-soft: #344c62;
+  --ink-mute: #5a7088;
   --primary: #367ebf;
   --on-primary: #ffffff;
-  --primary-strong: #1f5f99;
-  --primary-soft: rgba(54, 126, 191, 0.14);
-  --accent: #367ebf;
-  --accent-strong: #1d5f9a;
-  --accent-soft: rgba(54, 126, 191, 0.12);
-  --archivist-frame: rgba(54, 126, 191, 0.22);
-  --archivist-frame-strong: rgba(54, 126, 191, 0.48);
+  --primary-strong: #235889;
+  --primary-soft: #e2eef9;
+  --accent: #5fa1d6;
+  --accent-strong: #1f5f99;
+  --accent-soft: #e9f3fb;
+  --archivist-frame: #cfe1f2;
+  --archivist-frame-strong: #8fbce4;
   --archivist-frame-active: #367ebf;
-  --archivist-void: #e7f3fb;
+  --archivist-void: #eaf3fb;
   --archivist-surface: #ffffff;
-  --archivist-module: #f1f7fc;
-  --archivist-module-high: #e4eef7;
+  --archivist-module: #f2f8fd;
+  --archivist-module-high: #e6f0f9;
   --archivist-gold: #367ebf;
 }
 
 :root[data-theme="light"] body {
-  background:
-    linear-gradient(90deg, rgba(54, 126, 191, 0.06) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(54, 126, 191, 0.045) 1px, transparent 1px),
-    #f6fbff;
+  background: linear-gradient(180deg, #eef4fb 0%, #e0eaf6 100%) fixed;
   color: var(--ink);
 }
 
@@ -5603,8 +5602,614 @@ body:not(.sidebar-pinned):not(.sidebar-open):not(.profile-menu-open) .tabs:not(:
   color: var(--ink);
 }
 
-:root[data-theme="light"] .heatmap-cell { background: #dbeaf5; }
-:root[data-theme="light"] .heatmap-cell.l1 { background: #b8d8ef; }
-:root[data-theme="light"] .heatmap-cell.l2 { background: #8fc3e8; }
-:root[data-theme="light"] .heatmap-cell.l3 { background: #5fa8df; }
+:root[data-theme="light"] .heatmap-cell { background: #e6f0f9; }
+:root[data-theme="light"] .heatmap-cell.l1 { background: #c2dcf1; }
+:root[data-theme="light"] .heatmap-cell.l2 { background: #93c1e6; }
+:root[data-theme="light"] .heatmap-cell.l3 { background: #5b9ed8; }
 :root[data-theme="light"] .heatmap-cell.l4 { background: #367ebf; }
+
+/* Give light panels real depth instead of dark-style hard outlines.
+   The archivist shell forces `box-shadow: none !important`, so these
+   restore elevation with matching !important + a softened hairline border. */
+:root[data-theme="light"] .stat-card,
+:root[data-theme="light"] .card,
+:root[data-theme="light"] .dashboard-card,
+:root[data-theme="light"] .panel-card,
+:root[data-theme="light"] .state-card,
+:root[data-theme="light"] .help-dialog,
+:root[data-theme="light"] .song-dialog,
+:root[data-theme="light"] .ch-dialog {
+  border: 1px solid var(--border-soft) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+/* Interactive cards lift slightly on hover for a tactile light feel. */
+:root[data-theme="light"] .stat-card:hover,
+:root[data-theme="light"] .card.is-interactive:hover,
+:root[data-theme="light"] .request-card:hover {
+  box-shadow: var(--shadow) !important;
+  border-color: var(--border) !important;
+  transform: translateY(-2px);
+}
+
+/* Dialogs sit above the page — give them the strongest elevation. */
+:root[data-theme="light"] .help-dialog,
+:root[data-theme="light"] .song-dialog,
+:root[data-theme="light"] .ch-dialog {
+  box-shadow: var(--shadow-lg) !important;
+}
+
+/* Topbar/tabs become a soft floating bar rather than a hard-edged strip. */
+:root[data-theme="light"] .topbar {
+  box-shadow: 0 1px 0 var(--border-soft), 0 6px 18px rgba(54, 126, 191, 0.06);
+  border-bottom-color: transparent;
+}
+
+/* ============================================================
+   LIGHT THEME — dedicated repaint of the Archivist shell.
+   The shared shell hardcodes dark literals (many !important),
+   so every surface is restated here in light tones. The sharp,
+   framed identity is kept (radius 0, thin blue frames); #367ebf
+   stays the accent. Appended last + !important so this block
+   authoritatively wins the cascade against the dark literals.
+   ============================================================ */
+:root[data-theme="light"] {
+  --lt-panel: #ffffff;     /* cards / modules */
+  --lt-header: #dde9f7;    /* module header bands, switch tracks */
+  --lt-chrome: #eaf2fb;    /* buttons, search, rails, inputs */
+  --lt-raised: #d8e6f4;    /* hover / raised / grid base */
+  --lt-line: #aecbe8;
+  --lt-line-soft: #c8daed;
+}
+
+/* :root IS <html>, so target it directly (not a descendant).
+   body keeps its own blueprint-grid background defined above. */
+:root[data-theme="light"] {
+  background: var(--bg-1) !important;
+}
+
+/* Panels / cards */
+:root[data-theme="light"] .card,
+:root[data-theme="light"] .stat-card,
+:root[data-theme="light"] .dashboard-card,
+:root[data-theme="light"] .panel-card,
+:root[data-theme="light"] .state-card,
+:root[data-theme="light"] .heatmap-wrap,
+:root[data-theme="light"] .schedule-density,
+:root[data-theme="light"] .setlist-planner {
+  background: var(--lt-panel) !important;
+  border-color: var(--lt-line-soft) !important;
+  color: var(--ink) !important;
+}
+
+/* Module header bands */
+:root[data-theme="light"] .card-title {
+  background: var(--lt-header) !important;
+  color: var(--ink) !important;
+  border-color: var(--lt-line-soft) !important;
+}
+
+/* Pills / badges / tags */
+:root[data-theme="light"] .pill,
+:root[data-theme="light"] .tag,
+:root[data-theme="light"] .badge,
+:root[data-theme="light"] .badge.accent {
+  background: var(--primary-soft) !important;
+  color: var(--primary-strong) !important;
+  border-color: var(--lt-line-soft) !important;
+}
+
+/* Left nav rail */
+:root[data-theme="light"] .tabs {
+  background: var(--lt-chrome) !important;
+  border-color: var(--lt-line-soft) !important;
+}
+:root[data-theme="light"] .tab-btn {
+  background: transparent !important;
+  color: var(--ink-soft) !important;
+}
+:root[data-theme="light"] .tab-btn:hover {
+  background: var(--lt-raised) !important;
+  color: var(--primary-strong) !important;
+}
+:root[data-theme="light"] .tab-btn.active,
+:root[data-theme="light"] .tab-btn[aria-selected="true"] {
+  background: var(--primary-soft) !important;
+  color: var(--primary-strong) !important;
+}
+
+/* Sidebar bits */
+:root[data-theme="light"] .db-sidebar-mark,
+:root[data-theme="light"] .db-sidebar-pin,
+:root[data-theme="light"] .db-sidebar-head,
+:root[data-theme="light"] .db-sidebar-profile {
+  background: var(--lt-chrome) !important;
+  color: var(--ink-soft) !important;
+  border-color: var(--lt-line-soft) !important;
+}
+
+/* Topbar chrome: search + form controls */
+:root[data-theme="light"] .db-global-search,
+:root[data-theme="light"] input,
+:root[data-theme="light"] select,
+:root[data-theme="light"] textarea {
+  background: var(--lt-chrome) !important;
+  border-color: var(--lt-line) !important;
+  color: var(--ink) !important;
+}
+:root[data-theme="light"] input::placeholder,
+:root[data-theme="light"] textarea::placeholder,
+:root[data-theme="light"] .db-global-search input::placeholder {
+  color: var(--ink-mute) !important;
+}
+:root[data-theme="light"] .icon-btn,
+:root[data-theme="light"] .theme-toggle {
+  background: var(--lt-chrome) !important;
+  border-color: var(--lt-line) !important;
+  color: var(--ink-soft) !important;
+}
+:root[data-theme="light"] .icon-btn:hover,
+:root[data-theme="light"] .theme-toggle:hover {
+  background: var(--lt-raised) !important;
+  color: var(--primary-strong) !important;
+}
+
+/* Segmented switches (listener/streamer, channel, auto) */
+:root[data-theme="light"] .channel-switch,
+:root[data-theme="light"] .audience-switch {
+  background: var(--lt-header) !important;
+  border-color: var(--lt-line) !important;
+}
+:root[data-theme="light"] .ch-btn {
+  background: transparent !important;
+  color: var(--ink-soft) !important;
+}
+:root[data-theme="light"] .ch-btn.active,
+:root[data-theme="light"] .ch-btn[aria-pressed="true"],
+:root[data-theme="light"] .ch-btn[aria-selected="true"] {
+  background: var(--primary) !important;
+  color: #ffffff !important;
+}
+
+/* Activity / contribution grids */
+:root[data-theme="light"] .heatmap-cell,
+:root[data-theme="light"] .schedule-cell,
+:root[data-theme="light"] .schedule-cell.l0 { background: var(--lt-raised) !important; }
+:root[data-theme="light"] .heatmap-cell.l1,
+:root[data-theme="light"] .schedule-cell.l1 { background: #c2dcf1 !important; }
+:root[data-theme="light"] .heatmap-cell.l2,
+:root[data-theme="light"] .schedule-cell.l2 { background: #93c1e6 !important; }
+:root[data-theme="light"] .heatmap-cell.l3,
+:root[data-theme="light"] .schedule-cell.l3 { background: #5b9ed8 !important; }
+:root[data-theme="light"] .heatmap-cell.l4,
+:root[data-theme="light"] .schedule-cell.l4 { background: #367ebf !important; }
+
+/* Modals / dialogs / menus */
+:root[data-theme="light"] .modal-backdrop {
+  background: rgba(20, 40, 60, 0.28) !important;
+}
+:root[data-theme="light"] .help-dialog,
+:root[data-theme="light"] .song-dialog,
+:root[data-theme="light"] .ch-dialog,
+:root[data-theme="light"] .db-profile-menu {
+  background: var(--lt-panel) !important;
+  border-color: var(--lt-line) !important;
+  color: var(--ink) !important;
+}
+
+/* Music bar */
+:root[data-theme="light"] #music-bar,
+:root[data-theme="light"] [class*="music-bar"],
+:root[data-theme="light"] .sv-music-btn {
+  background: var(--lt-chrome) !important;
+  border-color: var(--lt-line) !important;
+  color: var(--ink) !important;
+}
+
+/* Song-request module */
+:root[data-theme="light"] .song-request-form input,
+:root[data-theme="light"] .song-request-form textarea,
+:root[data-theme="light"] .song-request-status-tabs,
+:root[data-theme="light"] .song-request-mini,
+:root[data-theme="light"] .song-request-vote,
+:root[data-theme="light"] .song-request-item {
+  background: var(--lt-chrome) !important;
+  border-color: var(--lt-line-soft) !important;
+  color: var(--ink) !important;
+}
+:root[data-theme="light"] .song-request-status-btn.active,
+:root[data-theme="light"] .song-request-vote.is-voted {
+  background: var(--primary) !important;
+  color: #ffffff !important;
+}
+
+/* --- Text colours: many were tuned for a dark shell and read as
+   near-white on the repainted light surfaces. Restate them. --- */
+:root[data-theme="light"] .stat-value { color: var(--ink) !important; }
+:root[data-theme="light"] .stat-label,
+:root[data-theme="light"] .stat-note { color: var(--ink-mute) !important; }
+:root[data-theme="light"] .empty-state,
+:root[data-theme="light"] .schedule-day-label,
+:root[data-theme="light"] .schedule-slot-label,
+:root[data-theme="light"] .schedule-day,
+:root[data-theme="light"] .heatmap-legend,
+:root[data-theme="light"] .mbar-sub { color: var(--ink-mute) !important; }
+:root[data-theme="light"] .brand-title,
+:root[data-theme="light"] .brand-dim,
+:root[data-theme="light"] .hero-title,
+:root[data-theme="light"] .mbar-title { color: var(--ink) !important; }
+:root[data-theme="light"] .badge,
+:root[data-theme="light"] .badge.accent,
+:root[data-theme="light"] .db-link-icon,
+:root[data-theme="light"] .sv-bc-sep { color: var(--primary-strong) !important; }
+
+/* Song-view overlay (sv-*) is a dark panel by default — repaint it. */
+:root[data-theme="light"] .sv-bc-btn,
+:root[data-theme="light"] .sv-close-btn,
+:root[data-theme="light"] .sv-close-label,
+:root[data-theme="light"] .sv-share-label,
+:root[data-theme="light"] .sv-cts-bulk-btn,
+:root[data-theme="light"] .mbar-mode-btn { color: var(--ink-soft) !important; }
+:root[data-theme="light"] .mbar-mode-btn.is-on { color: #ffffff !important; }
+
+/* --- Per-view chrome that the dark shell hardcodes: Ranking, Song,
+   Timeline, Analytics. Repaint to the light surface scale. --- */
+
+/* Ranking */
+:root[data-theme="light"] .ranking-period-selector,
+:root[data-theme="light"] .ranking-summary {
+  background: var(--lt-panel) !important;
+  border-color: var(--lt-line) !important;
+  color: var(--ink) !important;
+}
+:root[data-theme="light"] .ranking-table-head {
+  background: var(--lt-header) !important;
+  border-color: var(--lt-line) !important;
+  color: var(--ink) !important;
+}
+:root[data-theme="light"] .period-btn {
+  background: var(--lt-chrome) !important;
+  border-color: var(--lt-line) !important;
+  color: var(--ink-soft) !important;
+}
+:root[data-theme="light"] .period-btn:hover {
+  background: var(--lt-raised) !important;
+  color: var(--primary-strong) !important;
+}
+:root[data-theme="light"] .period-btn.active {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #ffffff !important;
+}
+
+/* Song list + ghost buttons */
+:root[data-theme="light"] .song-list {
+  background: var(--lt-panel) !important;
+  border-color: var(--lt-line-soft) !important;
+  color: var(--ink) !important;
+}
+:root[data-theme="light"] .btn.ghost {
+  background: var(--lt-chrome) !important;
+  border-color: var(--lt-line) !important;
+  color: var(--ink-soft) !important;
+}
+:root[data-theme="light"] .btn.ghost:hover {
+  background: var(--lt-raised) !important;
+  color: var(--primary-strong) !important;
+}
+:root[data-theme="light"] .btn.ghost.is-active,
+:root[data-theme="light"] .btn.ghost[aria-pressed="true"] {
+  background: var(--primary-soft) !important;
+  border-color: var(--border-strong) !important;
+  color: var(--primary-strong) !important;
+}
+
+/* Timeline tools bar */
+:root[data-theme="light"] .timeline-tools {
+  background: var(--lt-header) !important;
+  border-color: var(--lt-line) !important;
+  color: var(--ink) !important;
+}
+
+/* Analytics chart canvases: charts read CSS vars for axes/labels, so a
+   light plate yields dark-on-light gridlines on a fresh light load. */
+:root[data-theme="light"] .chart-wrap,
+:root[data-theme="light"] .chart-wrap.short {
+  background: var(--lt-chrome) !important;
+  border-color: var(--lt-line-soft) !important;
+}
+
+/* --- Readable descendant text. Secondary labels/values inside the
+   repainted containers carry hardcoded light-on-dark colours
+   (#c3c7cd / #aeb4bd / #fbfbff); normalise them for light. --- */
+:root[data-theme="light"] .ranking-summary,
+:root[data-theme="light"] .ranking-summary strong,
+:root[data-theme="light"] .ranking-summary h2,
+:root[data-theme="light"] .ranking-table-head,
+:root[data-theme="light"] .ranking-table-head strong,
+:root[data-theme="light"] .timeline-tools,
+:root[data-theme="light"] .song-list { color: var(--ink) !important; }
+
+:root[data-theme="light"] .ranking-summary span,
+:root[data-theme="light"] .ranking-summary small,
+:root[data-theme="light"] .ranking-table-head span,
+:root[data-theme="light"] .ranking-table-head small,
+:root[data-theme="light"] .timeline-tools span,
+:root[data-theme="light"] .timeline-tools small { color: var(--ink-mute) !important; }
+
+:root[data-theme="light"] .period-btn,
+:root[data-theme="light"] .period-btn span,
+:root[data-theme="light"] .period-btn small { color: var(--ink-soft) !important; }
+:root[data-theme="light"] .period-btn.active,
+:root[data-theme="light"] .period-btn.active span,
+:root[data-theme="light"] .period-btn.active small { color: #ffffff !important; }
+/* ID-scoped dark rule (#panel-ranking ...) outranks plain classes. */
+:root[data-theme="light"] #panel-ranking .period-btn.active {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #ffffff !important;
+}
+
+/* --- Generic buttons. The shell paints every `*-btn` / `.btn` dark
+   (#15181c); flip the neutral ones to light, leaving primary/active
+   states (handled above) coloured. --- */
+:root[data-theme="light"] .btn:not(.primary),
+:root[data-theme="light"] .load-more-btn,
+:root[data-theme="light"] button[class*="-btn"]:not(.active):not(.is-on):not([aria-pressed="true"]):not(.is-voted) {
+  background: var(--lt-chrome) !important;
+  border-color: var(--lt-line) !important;
+  color: var(--ink-soft) !important;
+}
+:root[data-theme="light"] .btn:not(.primary):hover,
+:root[data-theme="light"] .load-more-btn:hover,
+:root[data-theme="light"] button[class*="-btn"]:not(.active):not(.is-on):not([aria-pressed="true"]):hover {
+  background: var(--lt-raised) !important;
+  border-color: var(--border-strong) !important;
+  color: var(--primary-strong) !important;
+}
+
+/* --- All badge/key variants share the same dark literal. --- */
+:root[data-theme="light"] .genre-badge,
+:root[data-theme="light"] .tag-badge,
+:root[data-theme="light"] .match-badge,
+:root[data-theme="light"] .song-key-badge,
+:root[data-theme="light"] .song-key-empty,
+:root[data-theme="light"] .mv-type-badge,
+:root[data-theme="light"] .mv-badge-inline,
+:root[data-theme="light"] .timeline-stream-no,
+:root[data-theme="light"] .timeline-songcount {
+  background: var(--primary-soft) !important;
+  color: var(--primary-strong) !important;
+  border-color: var(--lt-line-soft) !important;
+}
+
+/* --- Stream/video viewer (#stream-viewer .sv-*). Keep the actual
+   video plate black; repaint the surrounding panel + rows. --- */
+:root[data-theme="light"] #stream-viewer .sv-panel,
+:root[data-theme="light"] .sv-panel {
+  background: var(--lt-panel) !important;
+  border-color: var(--lt-line) !important;
+  color: var(--ink) !important;
+}
+:root[data-theme="light"] .sv-setlist .sv-song,
+:root[data-theme="light"] .sv-queue-row,
+:root[data-theme="light"] .mbar-qp-row {
+  background: var(--lt-chrome) !important;
+  border-color: var(--lt-line-soft) !important;
+  color: var(--ink) !important;
+}
+:root[data-theme="light"] .sv-setlist .sv-song:hover,
+:root[data-theme="light"] .sv-queue-row:hover,
+:root[data-theme="light"] .mbar-qp-row:hover {
+  background: var(--lt-raised) !important;
+}
+
+/* --- Music bar + queue popup + mini player. --- */
+:root[data-theme="light"] #mbar-queue-popup {
+  background: var(--lt-panel) !important;
+  border-color: var(--lt-line) !important;
+  color: var(--ink) !important;
+}
+
+/* --- Left-rail profile button hover/expanded went black. --- */
+:root[data-theme="light"] .db-profile-button:hover,
+:root[data-theme="light"] .db-profile-button[aria-expanded="true"] {
+  background: var(--lt-chrome) !important;
+  border-color: var(--lt-line) !important;
+}
+:root[data-theme="light"] .db-profile-button { color: var(--ink) !important; }
+
+/* --- Song-request (リクエスト) module: header band + form container
+   were dark, with several light-on-dark text colours. --- */
+:root[data-theme="light"] .song-request-head {
+  background:
+    linear-gradient(90deg, rgba(54, 126, 191, 0.16), transparent 42%),
+    var(--lt-header) !important;
+  border-color: var(--lt-line) !important;
+}
+:root[data-theme="light"] .song-request-form {
+  background: var(--lt-panel) !important;
+  border-color: var(--lt-line) !important;
+}
+:root[data-theme="light"] .song-request-head h3,
+:root[data-theme="light"] .song-request-main h4 { color: var(--ink) !important; }
+:root[data-theme="light"] .song-request-form label span,
+:root[data-theme="light"] .song-request-rank small,
+:root[data-theme="light"] .song-request-meta { color: var(--ink-mute) !important; }
+:root[data-theme="light"] .song-request-status,
+:root[data-theme="light"] .song-request-status-btn,
+:root[data-theme="light"] .song-request-mini,
+:root[data-theme="light"] .song-request-main p,
+:root[data-theme="light"] .song-request-main blockquote { color: var(--ink-soft) !important; }
+:root[data-theme="light"] .song-request-rank span,
+:root[data-theme="light"] .song-request-vote { color: var(--primary-strong) !important; }
+:root[data-theme="light"] .song-request-status-btn.active,
+:root[data-theme="light"] .song-request-vote.is-voted { color: #ffffff !important; }
+
+/* --- Generic list text (.title / .count / .rank / .last-date) is used
+   across Ranking, Song, Timeline rows and carried near-white dark-shell
+   colours (#fbfbff / #c3c7cd). Normalise for light surfaces. --- */
+:root[data-theme="light"] .title,
+:root[data-theme="light"] .song-row .title,
+:root[data-theme="light"] .ranking-row .title,
+:root[data-theme="light"] .info .title,
+:root[data-theme="light"] .podium-card .song-title,
+:root[data-theme="light"] .timeline-title,
+:root[data-theme="light"] .timeline-title a,
+:root[data-theme="light"] .mv-card-title,
+:root[data-theme="light"] .pl-card-name,
+:root[data-theme="light"] .todays-song-title,
+:root[data-theme="light"] .recap-top-song strong,
+:root[data-theme="light"] h2 { color: var(--ink) !important; }
+:root[data-theme="light"] .count { color: var(--primary-strong) !important; }
+:root[data-theme="light"] .rank,
+:root[data-theme="light"] .last-date,
+:root[data-theme="light"] .count small,
+:root[data-theme="light"] .ranking-row small { color: var(--ink-mute) !important; }
+/* Podium medal colours, darkened for white backgrounds. */
+:root[data-theme="light"] .rank.r1 { color: #b07d12 !important; }
+:root[data-theme="light"] .rank.r2 { color: #5f7184 !important; }
+:root[data-theme="light"] .rank.r3 { color: #a4642f !important; }
+:root[data-theme="light"] option { color: var(--ink) !important; }
+/* ID-scoped period-button label colour. */
+:root[data-theme="light"] #panel-ranking .period-btn { color: var(--ink-soft) !important; }
+:root[data-theme="light"] #panel-ranking .period-btn.active { color: #ffffff !important; }
+
+/* #panel-ranking sets row text with ID selectors (specificity 120),
+   which outrank plain-class light overrides. Restate at ID level. */
+:root[data-theme="light"] #panel-ranking .section-header,
+:root[data-theme="light"] #panel-ranking .section-header h2,
+:root[data-theme="light"] #panel-ranking .ranking-row .info,
+:root[data-theme="light"] #panel-ranking .ranking-row .title { color: var(--ink) !important; }
+:root[data-theme="light"] #panel-ranking .ranking-row .rank,
+:root[data-theme="light"] #panel-ranking .period-month-select,
+:root[data-theme="light"] #panel-ranking .ranking-period-meta,
+:root[data-theme="light"] #panel-ranking .ranking-count-cell small { color: var(--ink-mute) !important; }
+:root[data-theme="light"] #panel-ranking .ranking-row .rank.r1 { color: #b07d12 !important; }
+:root[data-theme="light"] #panel-ranking .ranking-row .rank.r2 { color: #5f7184 !important; }
+:root[data-theme="light"] #panel-ranking .ranking-row .rank.r3 { color: #a4642f !important; }
+
+/* --- Timeline rows (details/summary) render dark with data. --- */
+:root[data-theme="light"] .timeline-item,
+:root[data-theme="light"] .timeline-item.recent,
+:root[data-theme="light"] .timeline-summary,
+:root[data-theme="light"] #panel-timeline .timeline-item,
+:root[data-theme="light"] #panel-timeline .timeline-summary {
+  background: var(--lt-panel) !important;
+  border-color: var(--lt-line-soft) !important;
+  color: var(--ink) !important;
+}
+:root[data-theme="light"] .timeline-item:hover,
+:root[data-theme="light"] .timeline-item[open],
+:root[data-theme="light"] .timeline-summary:hover {
+  background: var(--lt-raised) !important;
+  border-color: var(--border-strong) !important;
+}
+
+/* --- LATEST STREAM LOG (dashboard): dark card + light-on-dark text. --- */
+:root[data-theme="light"] .latest-stream-log {
+  background: var(--lt-panel) !important;
+  border-color: var(--lt-line-soft) !important;
+}
+:root[data-theme="light"] .latest-stream-thumb { background: var(--lt-raised) !important; }
+:root[data-theme="light"] .latest-stream-body h3 { color: var(--ink) !important; }
+:root[data-theme="light"] .latest-stream-body p { color: var(--ink-mute) !important; }
+:root[data-theme="light"] .latest-setlist { border-top-color: var(--lt-line-soft) !important; }
+:root[data-theme="light"] .latest-setlist span { color: var(--ink-soft) !important; }
+:root[data-theme="light"] .latest-setlist strong { color: var(--primary-strong) !important; }
+
+/* --- Playlist / MV cards (歌枠一覧 / 歌みた・オリ曲 / マイリスト). --- */
+:root[data-theme="light"] .pl-card,
+:root[data-theme="light"] .pl-sg-card,
+:root[data-theme="light"] .mv-card {
+  background: var(--lt-panel) !important;
+  border-color: var(--lt-line-soft) !important;
+  color: var(--ink) !important;
+}
+:root[data-theme="light"] .pl-card:hover,
+:root[data-theme="light"] .pl-sg-card:hover,
+:root[data-theme="light"] .mv-card:hover {
+  background: var(--lt-raised) !important;
+  border-color: var(--border-strong) !important;
+}
+/* Card thumbnails: light placeholder behind the cover image. */
+:root[data-theme="light"] .mv-thumb,
+:root[data-theme="light"] .mv-card-thumb,
+:root[data-theme="light"] .pl-card-thumb,
+:root[data-theme="light"] .pl-sg-thumb,
+:root[data-theme="light"] .dashboard-resume-thumb,
+:root[data-theme="light"] .mbar-thumb-wrap,
+:root[data-theme="light"] .mbar-video-wrap {
+  background: var(--lt-raised) !important;
+}
+
+/* --- Viewer / mini-player play button. --- */
+:root[data-theme="light"] .mbar-play-btn {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #ffffff !important;
+}
+:root[data-theme="light"] .sv-player-section .sv-play,
+:root[data-theme="light"] .yt-mini-play-btn {
+  background: var(--lt-chrome) !important;
+  border-color: var(--lt-line) !important;
+  color: var(--ink-soft) !important;
+}
+
+/* ============================================================
+   Softer panel separation. The Archivist shell frames every
+   surface with a hard 1px border, so the UI reads as a grid of
+   boxes. Replace those with a faint hairline + elevation (light)
+   / surface tone (dark), so panels feel integrated, not framed.
+   Sharp corners are kept — only the frame weight changes.
+   ============================================================ */
+:root[data-theme="light"] .card,
+:root[data-theme="light"] .dashboard-card,
+:root[data-theme="light"] .stat-card,
+:root[data-theme="light"] .panel-card,
+:root[data-theme="light"] .state-card,
+:root[data-theme="light"] .setlist-planner,
+:root[data-theme="light"] .sv-panel,
+:root[data-theme="light"] .timeline-item,
+:root[data-theme="light"] .timeline-summary,
+:root[data-theme="light"] .song-list,
+:root[data-theme="light"] .pl-card,
+:root[data-theme="light"] .pl-sg-card,
+:root[data-theme="light"] .mv-card,
+:root[data-theme="light"] .ranking-summary,
+:root[data-theme="light"] .ranking-period-selector,
+:root[data-theme="light"] .latest-stream-log,
+:root[data-theme="light"] .heatmap-wrap,
+:root[data-theme="light"] .schedule-density {
+  border-color: rgba(54, 126, 191, 0.09) !important;
+}
+:root[data-theme="light"] .card-title,
+:root[data-theme="light"] .ranking-table-head {
+  border-bottom-color: rgba(54, 126, 191, 0.09) !important;
+}
+
+:root:not([data-theme="light"]) .card,
+:root:not([data-theme="light"]) .dashboard-card,
+:root:not([data-theme="light"]) .stat-card,
+:root:not([data-theme="light"]) .panel-card,
+:root:not([data-theme="light"]) .state-card,
+:root:not([data-theme="light"]) .setlist-planner,
+:root:not([data-theme="light"]) .sv-panel,
+:root:not([data-theme="light"]) .timeline-item,
+:root:not([data-theme="light"]) .timeline-summary,
+:root:not([data-theme="light"]) .song-list,
+:root:not([data-theme="light"]) .pl-card,
+:root:not([data-theme="light"]) .pl-sg-card,
+:root:not([data-theme="light"]) .mv-card,
+:root:not([data-theme="light"]) .ranking-summary,
+:root:not([data-theme="light"]) .ranking-period-selector,
+:root:not([data-theme="light"]) .latest-stream-log,
+:root:not([data-theme="light"]) .heatmap-wrap,
+:root:not([data-theme="light"]) .schedule-density {
+  border-color: rgba(199, 226, 255, 0.08) !important;
+}
+:root:not([data-theme="light"]) .card-title,
+:root:not([data-theme="light"]) .ranking-table-head {
+  border-bottom-color: rgba(199, 226, 255, 0.08) !important;
+}
