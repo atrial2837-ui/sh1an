@@ -238,6 +238,39 @@
 
   <section class="admin-panel">
     <div class="section-header">
+      <h2>タイムスタンプを登録／修正</h2>
+    </div>
+    <form id="ts-register-form" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end">
+      <label style="display:flex;flex-direction:column;gap:2px;font-size:12px">
+        チャンネル
+        <select id="ts-reg-channel" style="min-width:90px">
+          <option value="new">Main (new)</option>
+          <option value="archive">Archive</option>
+        </select>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:2px;font-size:12px">
+        枠番号
+        <input id="ts-reg-stream" type="number" min="0" value="0" style="width:70px" required>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:2px;font-size:12px">
+        曲番号 (0始まり)
+        <input id="ts-reg-song" type="number" min="0" value="0" style="width:70px" required>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:2px;font-size:12px">
+        時刻 (MM:SS)
+        <input id="ts-reg-time" type="text" placeholder="0:00" style="width:90px" required>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:2px;font-size:12px">
+        メモ (任意)
+        <input id="ts-reg-note" type="text" placeholder="任意" style="width:120px">
+      </label>
+      <button class="btn primary" type="submit" style="align-self:flex-end">登録</button>
+    </form>
+    <p class="admin-note" id="ts-register-status" style="margin-top:6px"></p>
+  </section>
+
+  <section class="admin-panel">
+    <div class="section-header">
       <h2>更新手順</h2>
     </div>
     <ol class="admin-steps">

@@ -49,7 +49,8 @@ function formatStaticStreamRecord(stream) {
     title: stream.title,
     url: stream.url,
     songCount: stream.songCount,
-    songs: stream.songs.map(({ key }) => ({ key })),
+    // t（承認済みタイムスタンプ秒数）があれば含める。曲詳細サムネの YouTube 遷移用。
+    songs: stream.songs.map((s) => (s.t != null ? { key: s.key, t: s.t } : { key: s.key })),
   };
 }
 

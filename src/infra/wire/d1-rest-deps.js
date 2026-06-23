@@ -11,6 +11,7 @@ import {
   D1RestStreamRepository,
   D1RestStreamSongRepository,
   D1RestSongChannelStatsRepository,
+  D1RestTimestampRepository,
 } from '../d1-rest/index.js';
 import { SystemClock } from '../clock/system-clock.js';
 import { FetchSpreadsheetGateway } from '../spreadsheet/fetch-spreadsheet-gateway.js';
@@ -27,6 +28,7 @@ export function createD1RestDeps(config) {
     streams: new D1RestStreamRepository(client),
     streamSongs: new D1RestStreamSongRepository(client),
     stats: new D1RestSongChannelStatsRepository(client),
+    timestamps: new D1RestTimestampRepository(client),
     spreadsheet: new FetchSpreadsheetGateway(),
     clock: new SystemClock(),
   };

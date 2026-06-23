@@ -209,19 +209,36 @@ export function buildChannelDataset(channel, raw, today) {
     rows.sort((a, b) => a.position - b.position);
   }
 
+  // ── 承認済みコミュニティタイムスタンプの索引 (stream_index, song_index) → 秒 ──
+  // community_timestamps は管理者承認済みの公式タイムスタンプ。曲詳細サムネの
+  // YouTube 遷移用に各曲へ秒数 t を付与する。未提供 (テスト等) なら空。
+  /** @type {Map<string, number>} */
+  const tsByPos = new Map();
+  for (const ts of raw.communityTimestamps || []) {
+    if (ts.channel_code !== channel.code) continue;
+    if (ts.status && ts.status !== 'approved') continue;
+    const k = `${ts.stream_index}:${ts.song_index}`;
+    if (!tsByPos.has(k)) tsByPos.set(k, ts.time_seconds);
+  }
+
   // ── 当チャンネルの歌枠を構築 (日付降順) ──────────────────────────────────
   /** @type {EnrichedStream[]} */
   const streams = raw.streams
     .filter((s) => s.channel_id === channel.id)
     .map((stream) => {
       const date = stream.streamed_on;
+      const streamIndex = stream.source_index || 0;
       const ssRows = streamSongsByStreamId.get(stream.id) || [];
       const songRefs = ssRows.map((row) => {
         const song = row.song_id != null ? songsById.get(row.song_id) : null;
-        return {
+        // song_index は 0 始まり (position は 1 始まり)
+        const t = tsByPos.get(`${streamIndex}:${row.position - 1}`);
+        const ref = {
           key: song?.song_key || row.song_key_snapshot,
           raw: row.raw_text || '',
         };
+        if (t != null) ref.t = t;
+        return ref;
       });
       return {
         index: stream.source_index || 0,

@@ -21,6 +21,8 @@ import { syncKeyReferenceUrl } from '../../usecase/sync-key-reference-url.js';
 import { loadAdminStatus } from '../../usecase/load-admin-status.js';
 import { listTimestampSubmissions } from '../../usecase/timestamp/list-timestamp-submissions.js';
 import { reviewTimestamp } from '../../usecase/timestamp/review-timestamp.js';
+import { createApprovedTimestamp } from '../../usecase/timestamp/create-approved-timestamp.js';
+import { updateTimestampTime } from '../../usecase/timestamp/update-timestamp-time.js';
 
 /**
  * @typedef {import('./router.js').RouteContext} RouteContext
@@ -165,6 +167,25 @@ export function buildAdminRouter(options) {
     const id = Number(m[1]);
     await deps.timestamps.delete(id);
     return jsonResponse({ ok: true });
+  }));
+
+  /** 管理者による直接登録 — POST /timestamps (本文: channelCode, streamIndex, songIndex, timeSeconds) */
+  router.post(p('/timestamps'), auth(async (ctx) => {
+    const deps = getDeps(ctx);
+    const body = (await readJsonBody(ctx.request)) || {};
+    const created = await createApprovedTimestamp(deps, body);
+    return jsonResponse({ ok: true, item: tsToJson(created) }, 201);
+  }));
+
+  /** 時刻修正 — PATCH /timestamps/:id (本文: timeSeconds) */
+  router.patch(/^(?:.*\/)?timestamps\/(\d+)$/, auth(async (ctx) => {
+    const deps = getDeps(ctx);
+    const url = new URL(ctx.request.url);
+    const m = url.pathname.match(/\/timestamps\/(\d+)$/);
+    const id   = Number(m[1]);
+    const body = (await readJsonBody(ctx.request)) || {};
+    const updated = await updateTimestampTime(deps, { id, timeSeconds: body.timeSeconds });
+    return jsonResponse({ ok: true, item: tsToJson(updated) });
   }));
 
   if (includeIndexPage && renderIndexPage) {

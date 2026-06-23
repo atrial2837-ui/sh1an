@@ -98,6 +98,52 @@ export class D1TimestampRepository {
   }
 
   /**
+   * 管理者が直接承認済みタイムスタンプを登録する。
+   *
+   * @param {object} props
+   * @param {string} props.channelCode
+   * @param {number} props.streamIndex
+   * @param {number} props.songIndex
+   * @param {number} props.timeSeconds
+   * @param {string|null} [props.reviewerNote]
+   * @returns {Promise<TimestampSubmission>}
+   */
+  async insertApproved({ channelCode, streamIndex, songIndex, timeSeconds, reviewerNote = null }) {
+    const row = await this.client.queryFirst(
+      `INSERT INTO community_timestamps
+         (channel_code, stream_index, song_index, time_seconds, status, reviewed_at, reviewer_note)
+       VALUES (?, ?, ?, ?, 'approved', datetime('now'), ?)
+       RETURNING *`,
+      channelCode,
+      streamIndex,
+      songIndex,
+      timeSeconds,
+      reviewerNote,
+    );
+    return toEntity(row);
+  }
+
+  /**
+   * タイムスタンプの時刻を更新する（管理者用）。
+   *
+   * @param {number} id
+   * @param {object} props
+   * @param {number} props.timeSeconds
+   * @returns {Promise<TimestampSubmission|null>}
+   */
+  async updateTime(id, { timeSeconds }) {
+    const row = await this.client.queryFirst(
+      `UPDATE community_timestamps
+       SET time_seconds = ?
+       WHERE id = ?
+       RETURNING *`,
+      timeSeconds,
+      id,
+    );
+    return row ? toEntity(row) : null;
+  }
+
+  /**
    * 投稿のステータスを更新する（承認 / 却下）。
    *
    * @param {number} id

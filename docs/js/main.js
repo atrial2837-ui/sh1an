@@ -202,6 +202,8 @@ function syncActiveTabUi(tab) {
   if (current && activeLabel) current.textContent = activeLabel;
   $$('.panel').forEach(p => p.classList.toggle('active', p.id === `panel-${tab}`));
   document.body.dataset.activeTab = tab; // ヒーロー圧縮・ビューワー集中表示の CSS フック
+  // プレイリスト/動画ビュアーは上部横並びナビ（本文フルワイド）、他は左サイドバー。
+  document.body.classList.toggle('nav-top', tab === 'playlists' || tab === 'player');
 }
 
 function getDataset(channelId) {
@@ -1230,6 +1232,7 @@ function showPlayerPanel() {
   });
   $$('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-player'));
   document.body.dataset.activeTab = 'player'; // 集中表示（ヒーロー/タブを隠す）
+  document.body.classList.add('nav-top'); // 動画ビュアーは上部横並びナビ
 }
 
 /** 前のタブに戻る */
@@ -1298,7 +1301,6 @@ function _svSongRow(song, i, _ts, currentIdx) {
     </div>
     <div class="sv-song-actions">
       ${seek}
-      <button class="sv-ts-report" data-idx="${i}" data-action="cts-propose" type="button" title="タイムスタンプの修正を申請">修正申請</button>
     </div>
   </div>`;
 }
@@ -1444,13 +1446,11 @@ function _svShowProposeModal(stream, songIdx, songTitle) {
 
 // ─── Bulk community timestamp proposal ───────────────────────────────────────
 
-/** セトリ登録ボタンのテキスト・表示状態を更新する */
+/** 修正申請ボタンの表示状態を更新する（曲があれば常に表示・常に「修正申請」） */
 function _svUpdateBulkBtn(stream) {
   const btn = $('#sv-cts-bulk-btn');
   if (!btn || !stream?.songs?.length) return;
-  const registeredCount = Object.keys(_svCommunityTs).length;
-  const allRegistered   = registeredCount >= stream.songs.length;
-  btn.textContent = allRegistered ? '修正申請' : 'セトリ登録';
+  btn.textContent = '修正申請';
   btn.hidden = false;
 }
 
@@ -1459,9 +1459,11 @@ function _svShowBulkProposeModal(stream) {
   $('#sv-bulk-modal')?.remove();
 
   const localTs = _svLoadTs(stream); // 一括入力で保存済みのタイムスタンプ
-  const registeredCount = Object.keys(_svCommunityTs).length;
-  const allRegistered   = registeredCount >= stream.songs.length;
-  const isRevise = allRegistered;
+
+  // 曲選択プルダウン（個別申請用のジャンプ）。「全曲をまとめて」が既定。
+  const songOptions = stream.songs.map((song, idx) =>
+    `<option value="${idx}">${idx + 1}. ${escapeHtml(song.title)}${song.artist ? ' / ' + escapeHtml(song.artist) : ''}</option>`
+  ).join('');
 
   const rows = stream.songs.map((song, idx) => {
     const localVal = localTs[idx] != null ? _fmtTs(localTs[idx]) : '';
@@ -1483,11 +1485,18 @@ function _svShowBulkProposeModal(stream) {
   modal.className = 'sv-cts-modal-overlay';
   modal.innerHTML = `
     <div class="sv-cts-modal-box sv-bulk-modal-box" role="dialog" aria-modal="true"
-      aria-label="${isRevise ? '修正申請' : 'セトリ登録'}">
+      aria-label="修正申請">
       <div class="sv-cts-modal-head">
-        <span class="sv-cts-modal-title">${isRevise ? '修正申請' : 'セトリ登録'}</span>
+        <span class="sv-cts-modal-title">修正申請</span>
         <button class="sv-cts-modal-close" type="button" aria-label="閉じる">${icon('close')}</button>
       </div>
+      <label class="sv-cts-modal-label">
+        曲を選ぶ（個別申請）／そのまま全曲まとめて申請も可
+        <select class="sv-cts-modal-input" id="sv-bulk-song-jump">
+          <option value="">全曲をまとめて</option>
+          ${songOptions}
+        </select>
+      </label>
       <details class="sv-paste-area">
         <summary class="sv-paste-summary">配信コメントから一括入力</summary>
         <textarea class="sv-paste-textarea" placeholder="配信のタイムスタンプコメントを貼り付け&#10;例: 23:16　微かなカオリ / Perfume　27:58"></textarea>
@@ -1516,6 +1525,19 @@ function _svShowBulkProposeModal(stream) {
   modal.querySelector('.sv-cts-modal-close').addEventListener('click', close);
   modal.querySelector('.sv-cts-modal-cancel').addEventListener('click', close);
   modal.addEventListener('click', e => { if (e.target === modal) close(); });
+
+  // 曲選択プルダウン: 選んだ曲の入力欄へスクロール＆フォーカス（個別申請）
+  modal.querySelector('#sv-bulk-song-jump')?.addEventListener('change', (e) => {
+    modal.querySelectorAll('.sv-bulk-row.is-target').forEach(el => el.classList.remove('is-target'));
+    const v = e.target.value;
+    if (v === '') return;
+    const row = modal.querySelector(`.sv-bulk-row[data-idx="${v}"]`);
+    if (row) {
+      row.classList.add('is-target');
+      row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      row.querySelector('.sv-bulk-ts-input')?.focus();
+    }
+  });
 
   // 配信コメント貼り付け → タイムスタンプ一括入力
   modal.querySelector('.sv-paste-apply').addEventListener('click', () => {
@@ -2488,7 +2510,7 @@ function initStreamViewer() {
             <span>セットリスト</span>
             <div class="sv-panel-head-right">
               <button class="sv-setlist-toggle" id="sv-setlist-toggle" type="button" aria-expanded="true">畳む</button>
-              <button class="sv-cts-bulk-btn" id="sv-cts-bulk-btn" type="button" hidden>まとめて修正申請</button>
+              <button class="sv-cts-bulk-btn" id="sv-cts-bulk-btn" type="button" hidden>修正申請</button>
               <span class="sv-song-count" id="sv-song-count"></span>
             </div>
           </div>

@@ -169,7 +169,8 @@ export function createLineChart(ctx, labels, data, label) {
  */
 export function createDoughnutChart(ctx, labels, data) {
   const c = getColors();
-  const colors = [c.primary, c.accent, c.gold, c.primaryStrong, c.accentStrong, '#6cc6ec', '#ff9eb5', '#f4c44a'];
+  // #367ebf ベースのブルースケール（薄→深）、8枚目以降はマゼンタ #db006f をアクセントとして使用
+  const colors = ['#b3d0ec', '#8bb8e1', '#5fa0d6', '#367ebf', '#2c6aa3', '#235687', '#1c466e', '#db006f'];
   return createChart(ctx, 'doughnut', {
     labels,
     datasets: [{

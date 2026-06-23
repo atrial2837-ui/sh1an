@@ -22,3 +22,4 @@ export { D1RestStreamRepository } from './d1-stream-repository.js';
 export { D1RestStreamSongRepository } from './d1-stream-song-repository.js';
 export { D1RestSongChannelStatsRepository } from './d1-song-channel-stats-repository.js';
 export { D1RestChannelRepository } from './d1-channel-repository.js';
+export { D1RestTimestampRepository } from './d1-timestamp-repository.js';

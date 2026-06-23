@@ -129,14 +129,18 @@ function renderPeriodSelector(streams, currentPeriod, streamsLoaded) {
 
   return `
     <div class="ranking-period-selector">
-      ${periods.map(p => `
-        <button
-          class="period-btn${currentPeriod === p.key ? ' active' : ''}"
-          type="button"
-          data-ranking-period="${p.key}"
-          ${(!streamsLoaded && p.key !== 'all') ? 'disabled title="配信データ読み込み中"' : ''}
-        >${p.key === 'all' ? p.label : (streamsLoaded ? p.label : p.label + ' ...')}</button>
-      `).join('')}
+      <div class="period-seg" role="tablist">
+        ${periods.map(p => `
+          <button
+            class="period-btn${currentPeriod === p.key ? ' active' : ''}"
+            type="button"
+            role="tab"
+            aria-selected="${currentPeriod === p.key}"
+            data-ranking-period="${p.key}"
+            ${(!streamsLoaded && p.key !== 'all') ? 'disabled title="配信データ読み込み中"' : ''}
+          >${p.key === 'all' ? p.label : (streamsLoaded ? p.label : p.label + ' ...')}</button>
+        `).join('')}
+      </div>
       ${months.length && streamsLoaded ? `
         <select id="ranking-month-select" class="select-input period-month-select" title="月を指定">
           <option value="">SELECT MONTH</option>

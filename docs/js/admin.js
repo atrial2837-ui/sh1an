@@ -406,7 +406,7 @@ function renderTimestamps(items) {
                 <button class="btn ghost" data-ts-approve="${item.id}" type="button" style="margin-right:4px">承認</button>
                 <button class="btn ghost" data-ts-reject="${item.id}"  type="button">却下</button>
                </td>`
-            : `<td>${reviewedAt}</td>`;
+            : `<td>${reviewedAt}<br><button class="btn ghost" data-ts-edit-time="${item.id}" data-ts-current-seconds="${item.timeSeconds}" type="button" style="font-size:11px;padding:2px 8px;margin-top:2px">時刻修正</button></td>`;
           return `
             <tr>
               <td>${chLabel}</td>
@@ -489,26 +489,116 @@ async function initTimestamps() {
 
   $('#ts-table-wrap').addEventListener('click', async (e) => {
     if (_tsBusy) return;
-    const approveBtn = e.target.closest('[data-ts-approve]');
-    const rejectBtn  = e.target.closest('[data-ts-reject]');
-    if (!approveBtn && !rejectBtn) return;
+    const approveBtn  = e.target.closest('[data-ts-approve]');
+    const rejectBtn   = e.target.closest('[data-ts-reject]');
+    const editTimeBtn = e.target.closest('[data-ts-edit-time]');
 
-    const id     = approveBtn ? approveBtn.dataset.tsApprove : rejectBtn.dataset.tsReject;
-    const action = approveBtn ? 'approve' : 'reject';
-    const label  = approveBtn ? '承認' : '却下';
+    if (approveBtn || rejectBtn) {
+      const id     = approveBtn ? approveBtn.dataset.tsApprove : rejectBtn.dataset.tsReject;
+      const action = approveBtn ? 'approve' : 'reject';
+      const label  = approveBtn ? '承認' : '却下';
 
-    if (!confirm(`この申請を${label}しますか？`)) return;
-    $('#ts-status').textContent = `${label}中…`;
-    try {
-      await adminApi(`timestamps/${id}/${action}`, {});
-      $('#ts-status').textContent = `${label}しました`;
-      loadTimestamps();
-    } catch (err) {
-      $('#ts-status').textContent = `エラー: ${err.message || err}`;
+      if (!confirm(`この申請を${label}しますか？`)) return;
+      $('#ts-status').textContent = `${label}中…`;
+      try {
+        await adminApi(`timestamps/${id}/${action}`, {});
+        $('#ts-status').textContent = `${label}しました`;
+        loadTimestamps();
+      } catch (err) {
+        $('#ts-status').textContent = `エラー: ${err.message || err}`;
+      }
+      return;
+    }
+
+    if (editTimeBtn) {
+      const id      = editTimeBtn.dataset.tsEditTime;
+      const current = fmtSeconds(Number(editTimeBtn.dataset.tsCurrentSeconds));
+      const input   = prompt(`id=${id} の新しい時刻を入力してください（例: 1:23）`, current);
+      if (input === null) return;
+      const timeSeconds = parseTimeInput(input);
+      if (timeSeconds === null) {
+        alert('時刻の形式が不正です（例: 1:23 または 1:02:34）');
+        return;
+      }
+      $('#ts-status').textContent = '時刻修正中…';
+      try {
+        // PATCH /api/admin/timestamps/:id
+        const res = await fetch(`/api/admin/timestamps/${id}`, {
+          method: 'PATCH',
+          headers: {
+            'content-type': 'application/json',
+            'x-admin-token': adminToken?.value || '',
+          },
+          body: JSON.stringify({ timeSeconds }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Request failed');
+        $('#ts-status').textContent = `時刻を ${fmtSeconds(timeSeconds)} に修正しました`;
+        loadTimestamps();
+      } catch (err) {
+        $('#ts-status').textContent = `エラー: ${err.message || err}`;
+      }
     }
   });
 
   loadTimestamps();
+}
+
+/* ── タイムスタンプ登録フォーム ──────────────────────────────────────────── */
+
+/**
+ * "MM:SS" または "H:MM:SS" 形式の文字列を秒数 (整数) に変換する。
+ * パース失敗時は null を返す。
+ *
+ * @param {string} value
+ * @returns {number|null}
+ */
+function parseTimeInput(value) {
+  const s = String(value || '').trim();
+  const parts = s.split(':').map(Number);
+  if (parts.some(isNaN)) return null;
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  return null;
+}
+
+function initTimestampRegister() {
+  const form = $('#ts-register-form');
+  if (!form) return;
+
+  const statusEl = $('#ts-register-status');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const channelCode  = $('#ts-reg-channel')?.value.trim() || 'new';
+    const streamIndex  = Number($('#ts-reg-stream')?.value);
+    const songIndex    = Number($('#ts-reg-song')?.value);
+    const timeRaw      = $('#ts-reg-time')?.value.trim();
+    const timeSeconds  = parseTimeInput(timeRaw);
+    const reviewerNote = $('#ts-reg-note')?.value.trim() || null;
+
+    if (timeSeconds === null) {
+      statusEl.textContent = '時刻の形式が不正です（例: 1:23 または 1:02:34）';
+      return;
+    }
+
+    statusEl.textContent = '登録中…';
+    try {
+      const data = await adminApi('timestamps', {
+        channelCode,
+        streamIndex,
+        songIndex,
+        timeSeconds,
+        reviewerNote,
+      });
+      statusEl.textContent = `登録しました (id=${data.item?.id})`;
+      form.reset();
+      // タイムスタンプ一覧も更新する
+      loadTimestamps();
+    } catch (err) {
+      statusEl.textContent = `エラー: ${err.message || err}`;
+    }
+  });
 }
 
 /* ─── 音楽動画管理 ───────────────────────────────────────────────────────── */
@@ -639,4 +729,5 @@ $('#refresh-status').addEventListener('click', loadStatus);
 initManagement();
 loadStatus();
 initTimestamps();
+initTimestampRegister();
 initMusicVideos();

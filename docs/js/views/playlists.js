@@ -15,7 +15,7 @@ import { $, escapeHtml, fmtDate, streamKey, youtubeThumb, youtubeThumbFallback, 
 import { icon } from '../icons.js';
 
 const STORAGE_KEY = 'sh1an-playlists';
-const MUSIC_CACHE_KEY = 'sh1an-music-videos-cache-v2';
+const MUSIC_CACHE_KEY = 'sh1an-music-videos-cache-v3';
 const REQUEST_CACHE_KEY = 'sh1an-song-requests-cache-v1';
 const REQUEST_LOCAL_KEY = 'sh1an-song-requests-local-v1';
 const PER_PAGE    = 24; // 4列 × 6行
@@ -293,6 +293,15 @@ export function renderPlaylists() {
     clearTimeout(_musicSearchDebounce);
     _refreshMusicResults();
   };
+  // 歌枠一覧の並び替えプルダウン
+  panel.onchange = (e) => {
+    const sortSel = e.target.closest('#pl-stream-sort');
+    if (sortSel) {
+      _streamSort = sortSel.value;
+      _streamPage = 1;
+      _renderPageInPlace(allStreams);
+    }
+  };
 
   // サムネ 404 フォールバック
   panel.addEventListener('error', (e) => {
@@ -378,9 +387,12 @@ function _renderAllStreams(streams, page) {
 
   const sortBar = `
     <div class="pl-sort-bar">
-      ${SORT_OPTIONS.map(o => `
-        <button class="pl-sort-opt${_streamSort === o.key ? ' active' : ''}"
-          data-pl-sort="${o.key}" type="button">${o.label}</button>`).join('')}
+      <label class="pl-sort-field">
+        <span class="pl-sort-label">並び替え</span>
+        <select class="select-input" id="pl-stream-sort">
+          ${SORT_OPTIONS.map(o => `<option value="${o.key}"${_streamSort === o.key ? ' selected' : ''}>${o.label}</option>`).join('')}
+        </select>
+      </label>
     </div>`;
 
   return `${sortBar}<div class="pl-stream-grid" id="pl-stream-grid">${cards}</div>${pagination}`;

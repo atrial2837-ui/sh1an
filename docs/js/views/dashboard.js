@@ -17,21 +17,21 @@ export function renderDashboard() {
 
   const activityHtml = `
     <div class="card dashboard-card dashboard-activity-card">
-      <div class="card-title">${icon('analytics')} 今月の活動</div>
+      <div class="card-title">今月の活動</div>
       <div class="dashboard-metric-list">
         <div class="activity-row">
           <span class="a-date">配信</span>
-          <span class="a-meta">今月の歌枠数</span>
+          <span class="a-meta">歌枠数</span>
           <strong>${countStreamsThisMonth(streams, today)}回</strong>
         </div>
         <div class="activity-row">
           <span class="a-date">歌唱</span>
-          <span class="a-meta">今月の総歌唱数</span>
+          <span class="a-meta">総歌唱数</span>
           <strong>${countSongsThisMonth(streams, today)}曲</strong>
         </div>
         <div class="activity-row">
           <span class="a-date">新曲</span>
-          <span class="a-meta">今月の初披露曲数</span>
+          <span class="a-meta">初披露</span>
           <strong>${newSongs}曲</strong>
         </div>
         <div class="activity-row">
@@ -45,7 +45,7 @@ export function renderDashboard() {
 
   const top5Html = `
     <div class="card dashboard-card dashboard-top-card">
-      <div class="card-title">${icon('rank')} TOP 5 楽曲 <span class="pill">ALL TIME</span></div>
+      <div class="card-title">TOP 5 楽曲</div>
       <div class="bar-list">
         ${top5.length ? top5.map((s, i) => topBarRow(s, i, top5Max)).join('') : '<div class="empty-state">曲データなし</div>'}
       </div>
@@ -59,15 +59,15 @@ export function renderDashboard() {
         ${renderLatestStreamLog(streams[0])}
         ${top5Html}
         <div class="card dashboard-card dashboard-genre-card">
-          <div class="card-title">${icon('chart')} GENRE DISTRIBUTION <span class="pill">楽曲数</span></div>
+          <div class="card-title">ジャンル分布</div>
           ${renderGenreChart(songs)}
         </div>
         <div class="card dashboard-card dashboard-schedule-card">
-          <div class="card-title">${icon('calendar')} 曜日・時間帯分布 <span class="pill">SCHEDULE DENSITY</span></div>
+          <div class="card-title">曜日分布</div>
           ${renderScheduleDensity(streams)}
         </div>
         <div class="card dashboard-card dashboard-heatmap-card">
-          <div class="card-title">${icon('calendar')} 配信ヒートマップ <span class="pill">ACTIVITY HEATMAP</span></div>
+          <div class="card-title">配信ヒートマップ</div>
           ${renderHeatmap(heatmap)}
         </div>
       </div>
@@ -85,7 +85,7 @@ function renderRecapCardShell() {
   return `
     <div class="card dashboard-card dashboard-recap-card" id="dashboard-recap-card">
       <div class="card-title">
-        ${icon('chart')} sh1an のまとめ
+        sh1an のまとめ
         <span class="dashboard-recap-toggle" id="dashboard-recap-toggle">
           <button class="btn ghost" type="button" data-recap-period="year" id="recap-btn-year">今年</button>
           <button class="btn ghost" type="button" data-recap-period="month" id="recap-btn-month">今月</button>
@@ -243,7 +243,7 @@ function renderResumeSection() {
   const entries = _watchHistory().slice(0, 6);
   return `
     <div class="card dashboard-card dashboard-resume-card">
-      <div class="card-title">${icon('play')} 続きから見る
+      <div class="card-title">続きから見る
         <span class="dashboard-resume-actions">
           <button class="dashboard-resume-clear dashboard-resume-queue" id="dashboard-resume-queue" type="button" title="履歴をキューとして再生">キュー再生</button>
           <button class="dashboard-resume-clear" id="dashboard-resume-clear" type="button" title="履歴を消去">消去</button>
@@ -285,8 +285,10 @@ function bindResumeSection() {
   const clear = $('#dashboard-resume-clear');
   if (clear) {
     clear.onclick = () => {
+      // 再生履歴をクリアする。パネルは残し、空状態を表示する。
       try { localStorage.removeItem(WATCH_HISTORY_KEY); } catch (_) {}
-      $('#panel-dashboard .dashboard-resume-card')?.remove();
+      const list = $('#dashboard-resume-list');
+      if (list) list.innerHTML = '<div class="empty-state">再生履歴はまだありません</div>';
     };
   }
   const queueBtn = $('#dashboard-resume-queue');
@@ -315,35 +317,35 @@ function deferredDashboardHtml(streams, songs, recent) {
   const yearlyHits = periodHits(streams, 'year', getToday());
   return `
     <div class="card dashboard-card dashboard-list-card dashboard-list-month">
-      <div class="card-title">${icon('rank')} 今月のよく歌われた曲 <span class="pill">軽量版</span></div>
+      <div class="card-title">今月のよく歌われた曲</div>
       <div class="bar-list">
         ${monthlyHits.length ? monthlyHits.slice(0, 5).map((s, i) => topBarRow(s, i, monthlyHits[0].count)).join('') : '<div class="empty-state">今月の歌唱履歴なし</div>'}
       </div>
     </div>
 
     <div class="card dashboard-card dashboard-list-card dashboard-list-year">
-      <div class="card-title">${icon('rank')} 今年のよく歌われた曲 <span class="pill">軽量版</span></div>
+      <div class="card-title">今年のよく歌われた曲</div>
       <div class="bar-list">
         ${yearlyHits.length ? yearlyHits.slice(0, 5).map((s, i) => topBarRow(s, i, yearlyHits[0].count)).join('') : '<div class="empty-state">今年の歌唱履歴なし</div>'}
       </div>
     </div>
 
     <div class="card dashboard-card dashboard-list-card dashboard-list-stale">
-      <div class="card-title">${icon('time')} 久しぶり候補 <span class="pill">180日以上</span></div>
+      <div class="card-title">久しぶり候補</div>
       <div class="bar-list">
         ${stalePicks.length ? stalePicks.map((s, i) => topBarRow(s, i, stalePicks[0].count)).join('') : '<div class="empty-state">候補なし</div>'}
       </div>
     </div>
 
     <div class="card dashboard-card dashboard-list-card dashboard-list-recent">
-      <div class="card-title">${icon('sparkle')} 最近歌った定番 <span class="pill">30日以内</span></div>
+      <div class="card-title">最近歌った定番</div>
       <div class="bar-list">
         ${recentPicks.length ? recentPicks.map((s, i) => topBarRow(s, i, recentPicks[0].count)).join('') : '<div class="empty-state">候補なし</div>'}
       </div>
     </div>
 
     <div class="card dashboard-card dashboard-recent-card">
-      <div class="card-title">${icon('video')} 直近の歌枠 <span class="pill">最新${recent.length}件</span></div>
+      <div class="card-title">直近の歌枠</div>
       ${recent.map(s => `
         <div class="activity-row">
           <span class="a-date">${fmtDate(s.date)}</span>
@@ -373,7 +375,7 @@ function renderLatestStreamLog(stream) {
   if (!stream) {
     return `
       <div class="card dashboard-card dashboard-latest-card">
-        <div class="card-title">${icon('video')} LATEST STREAM LOG</div>
+        <div class="card-title">最新の歌枠</div>
         <div class="empty-state">直近の歌枠はまだありません</div>
       </div>
     `;
@@ -382,10 +384,7 @@ function renderLatestStreamLog(stream) {
   const songs = (stream.songs || []).slice(0, 5);
   return `
     <div class="card dashboard-card dashboard-latest-card">
-      <div class="card-title">
-        ${icon('video')} LATEST STREAM LOG
-        <span class="pill">${fmtDate(stream.date)}</span>
-      </div>
+      <div class="card-title">最新の歌枠</div>
       <div class="latest-stream-log">
         <a class="latest-stream-thumb" href="${escapeHtml(stream.url || '#')}" target="_blank" rel="noopener" aria-label="YouTubeで開く">
           ${thumb ? `<img src="${escapeHtml(thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}
@@ -405,35 +404,27 @@ function renderLatestStreamLog(stream) {
 }
 
 function renderScheduleDensity(streams) {
+  // 配信は夜中心のため時間帯軸は廃止し、曜日分布のみを表示する。
   const days = ['日', '月', '火', '水', '木', '金', '土'];
-  const slots = [
-    { key: 'morning', label: '朝', from: 5, to: 11 },
-    { key: 'day', label: '昼', from: 11, to: 17 },
-    { key: 'night', label: '夜', from: 17, to: 23 },
-    { key: 'late', label: '深夜', from: 23, to: 29 },
-  ];
-  const counts = Array.from({ length: days.length }, () => Array(slots.length).fill(0));
+  const counts = Array(7).fill(0);
   for (const stream of streams) {
     const d = stream.date instanceof Date ? stream.date : new Date(stream.date);
     if (Number.isNaN(d.getTime())) continue;
-    const hour = d.getHours();
-    const h = hour < 5 ? hour + 24 : hour;
-    const slotIndex = slots.findIndex(slot => h >= slot.from && h < slot.to);
-    if (slotIndex >= 0) counts[d.getDay()][slotIndex]++;
+    counts[d.getDay()]++;
   }
-  const max = Math.max(1, ...counts.flat());
+  const max = Math.max(1, ...counts);
   return `
-    <div class="schedule-density">
-      <div class="schedule-head"></div>
-      ${slots.map(slot => `<div class="schedule-slot-label">${slot.label}</div>`).join('')}
-      ${days.map((day, dayIndex) => `
-        <div class="schedule-day-label">${day}</div>
-        ${slots.map((slot, slotIndex) => {
-          const value = counts[dayIndex][slotIndex];
-          const level = Math.ceil((value / max) * 4);
-          return `<div class="schedule-cell l${value ? level : 0}" title="${day}曜 ${slot.label}: ${value}枠"><span>${value || ''}</span></div>`;
-        }).join('')}
-      `).join('')}
+    <div class="dow-dist">
+      ${days.map((day, i) => {
+        const value = counts[i];
+        const pct = Math.round((value / max) * 100);
+        return `
+        <div class="dow-row" title="${day}曜: ${value}枠">
+          <span class="dow-label">${day}</span>
+          <div class="dow-bar-track"><div class="dow-bar" style="width:${pct}%"></div></div>
+          <span class="dow-value">${value}</span>
+        </div>`;
+      }).join('')}
     </div>
   `;
 }
@@ -509,17 +500,36 @@ function renderMonthlyBars(monthly, max) {
 }
 
 function renderHeatmap(cells) {
-  const dow = ['日','月','火','水','木','金','土'];
-  const rowsHtml = dow.map(d => `<div>${d}</div>`).join('');
-  const cellsHtml = cells.map(c => {
-    if (!c.inRange) return `<div class="heatmap-cell" style="visibility:hidden"></div>`;
-    const lvl = heatLevel(c.value);
-    return `<div class="heatmap-cell ${lvl}" title="${c.iso}: ${c.value}曲"></div>`;
+  // 日曜始まりで7日ごとに週へ分割（buildHeatmap が週頭パディング済み）。
+  const weeks = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+
+  // 各週の代表日（範囲内の先頭、無ければ先頭）から月を判定し、月が変わる週に月ラベルを置く。
+  const repDate = (week) => (week.find(c => c.inRange) || week[0]).date;
+  let prevMonth = -1;
+  const monthsHtml = weeks.map((week) => {
+    const m = repDate(week).getMonth();
+    const label = m !== prevMonth ? `${m + 1}月` : '';
+    prevMonth = m;
+    return `<div class="hm-month">${label}</div>`;
   }).join('');
+
+  const days = ['日', '月', '火', '水', '木', '金', '土'];
+  const daysHtml = days.map((d, i) => `<div class="hm-day${i % 2 ? ' is-dim' : ''}">${d}</div>`).join('');
+
+  const weeksHtml = weeks.map((week) => `
+    <div class="hm-week">
+      ${week.map(c => c.inRange
+        ? `<div class="heatmap-cell ${heatLevel(c.value)}" title="${c.iso}: ${c.value}曲"></div>`
+        : '<div class="heatmap-cell" style="visibility:hidden"></div>').join('')}
+    </div>`).join('');
+
   return `
-    <div class="heatmap-flex">
-      <div class="heatmap-row-labels">${rowsHtml}</div>
-      <div class="heatmap-wrap"><div class="heatmap">${cellsHtml}</div></div>
+    <div class="heatmap-cal">
+      <div class="hm-corner"></div>
+      <div class="hm-months">${monthsHtml}</div>
+      <div class="hm-days">${daysHtml}</div>
+      <div class="hm-weeks">${weeksHtml}</div>
     </div>
     <div class="heatmap-legend">
       少なめ

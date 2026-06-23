@@ -100,7 +100,9 @@ function mergeChannels(datasets, baseStats = {}) {
   for (const stream of streams) {
     for (const song of stream.songs || []) {
       if (!refsBySongKey.has(song.key)) refsBySongKey.set(song.key, []);
-      refsBySongKey.get(song.key).push(stream);
+      // song.t（承認済みタイムスタンプ秒数）があれば、その曲固有の参照に付与する。
+      // 曲詳細サムネの YouTube 遷移でこの秒数へジャンプする。
+      refsBySongKey.get(song.key).push(song.t != null ? { ...stream, t: song.t } : stream);
     }
   }
 
@@ -217,12 +219,15 @@ function hydrateDataset(dataset) {
   for (const stream of dataset.streams) {
     stream.songs = (stream.songs || []).map((item) => {
       const song = songByKey.get(item.key);
-      return {
+      const mapped = {
         title: item.title || song?.title || '',
         artist: item.artist || song?.artist || '',
         key: item.key || song?.key || '',
         raw: item.raw || '',
       };
+      // t（承認済みタイムスタンプ秒数）を保持（曲詳細サムネの YouTube 遷移用）
+      if (item.t != null) mapped.t = item.t;
+      return mapped;
     });
   }
 
@@ -230,7 +235,8 @@ function hydrateDataset(dataset) {
   for (const stream of dataset.streams) {
     for (const song of stream.songs) {
       if (!refsBySongKey.has(song.key)) refsBySongKey.set(song.key, []);
-      refsBySongKey.get(song.key).push(stream);
+      // 曲固有の t があれば付与した stream 参照を push する。
+      refsBySongKey.get(song.key).push(song.t != null ? { ...stream, t: song.t } : stream);
     }
   }
 

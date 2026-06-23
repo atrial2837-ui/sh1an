@@ -1339,7 +1339,12 @@ button.official-link {
 .songs-filter-row {
   gap: 7px;
   margin-bottom: 10px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding-bottom: 4px;
 }
+.songs-filter-row > * { flex: 0 0 auto; }
 .songs-advanced .genre-strip {
   margin: 0;
 }
@@ -3413,7 +3418,9 @@ body.has-sv-fullscreen .container { z-index: auto; }
 
 .ranking-period-selector {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
   gap: 6px;
   margin: -4px 0 14px;
   align-items: center;
@@ -3796,11 +3803,20 @@ body.has-sv-fullscreen .container { z-index: auto; }
 
 /* ── 歌枠一覧グリッド ─────────────────────────────────────────────────── */
 
+/* 横スライド（カルーセル）。サイドバー展開で幅が縮んでもサムネは固定幅を維持。 */
 .pl-stream-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
   gap: 14px;
   margin-bottom: 24px;
+  padding-bottom: 10px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+.pl-stream-grid > .pl-sg-card {
+  flex: 0 0 240px;
+  scroll-snap-align: start;
 }
 
 /* カード（button にして全体クリック可能） */
@@ -4226,7 +4242,27 @@ body.has-sv-fullscreen .container { z-index: auto; }
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  align-items: center;
   padding: 12px 0 8px;
+}
+.pl-sort-bar > * { flex: 0 0 auto; }
+
+/* 歌枠一覧の並び替えプルダウン */
+.pl-sort-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.pl-sort-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.pl-sort-field .select-input#pl-stream-sort {
+  height: 34px;
+  min-width: 140px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .pl-sort-opt {
@@ -4839,6 +4875,13 @@ body.has-sv-fullscreen .container { z-index: auto; }
   grid-template-columns: 22px 1fr 88px 28px;
   align-items: center;
   gap: 6px;
+  border-radius: 6px;
+}
+
+/* 曲選択プルダウンで個別申請対象に選ばれた行を強調 */
+.sv-bulk-row.is-target {
+  background: var(--primary-soft);
+  box-shadow: inset 0 0 0 1px var(--primary);
 }
 
 .sv-bulk-num {
@@ -5896,10 +5939,19 @@ body.has-music-bar { padding-bottom: 72px; }
 }
 
 /* ── グリッドビュー ── */
+/* 横スライド（カルーセル）。サイドバー展開で本文が狭くてもサムネは固定幅を維持。 */
 .mv-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px 18px;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 16px;
+  padding-bottom: 10px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+.mv-grid > .mv-card {
+  flex: 0 0 230px;
+  scroll-snap-align: start;
 }
 .mv-card {
   position: relative;

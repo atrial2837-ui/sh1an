@@ -668,14 +668,53 @@ textarea {
   height: 10px;
   border-radius: 50%;
 }
-.g0 { background: var(--primary); }
-.g1 { background: var(--accent); }
-.g2 { background: var(--gold); }
-.g3 { background: var(--primary-strong); }
-.g4 { background: var(--accent-strong); }
-.g5 { background: #7ad99c; }
-.g6 { background: #d49a6a; }
-.g7 { background: #9bdcf7; }
+/* ジャンルメーター: #367ebf 基調の明度スケール + 唯一の差し色 #db006f。 */
+.g0 { background: #367ebf; }
+.g1 { background: #5fa0d6; }
+.g2 { background: #8bb8e1; }
+.g3 { background: #2c6aa3; }
+.g4 { background: #235687; }
+.g5 { background: #1c466e; }
+.g6 { background: #b3d0ec; }
+.g7 { background: #db006f; }
+
+/* 曜日分布（時間帯軸を廃した簡素な7曜日バー） */
+.dow-dist {
+  display: grid;
+  gap: 7px;
+  padding: 4px 2px;
+}
+.dow-row {
+  display: grid;
+  grid-template-columns: 20px 1fr 28px;
+  align-items: center;
+  gap: 10px;
+}
+.dow-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink-soft);
+  text-align: center;
+}
+.dow-bar-track {
+  height: 12px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.dow-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #5fa0d6, #367ebf);
+  min-width: 2px;
+}
+.dow-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
 
 .monthly-bars {
   display: grid;
@@ -722,19 +761,59 @@ textarea {
 
 /* Heatmap (calendar) */
 
-.heatmap-wrap {
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 2px;
-  scrollbar-width: thin;
-}
-.heatmap {
+/* カレンダー型ヒートマップ: 上に月ラベル / 左に曜日 / 列=週（日曜始まり） */
+.heatmap-cal {
   display: grid;
-  grid-auto-flow: column;
+  grid-template-columns: 24px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 5px;
+  row-gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding-bottom: 2px;
+}
+.hm-corner { grid-row: 1; grid-column: 1; }
+.hm-months {
+  grid-row: 1;
+  grid-column: 2;
+  display: flex;
+  gap: 3px;
+}
+.hm-month {
+  flex: 0 0 12px;
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: visible;
+}
+.hm-days {
+  grid-row: 2;
+  grid-column: 1;
+  display: grid;
   grid-template-rows: repeat(7, 12px);
-  gap: 2px;
-  min-height: 96px;
+  gap: 3px;
+}
+.hm-day {
+  height: 12px;
+  line-height: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: right;
+  color: var(--ink-soft);
+}
+.hm-weeks {
+  grid-row: 2;
+  grid-column: 2;
+  display: flex;
+  gap: 3px;
   width: max-content;
+}
+.hm-week {
+  display: grid;
+  grid-template-rows: repeat(7, 12px);
+  gap: 3px;
 }
 .heatmap-cell {
   width: 12px;
@@ -744,10 +823,10 @@ textarea {
   transition: transform 0.1s ease, outline 0.1s ease;
   cursor: default;
 }
-.heatmap-cell.l1 { background: #c2ecff; }
-.heatmap-cell.l2 { background: #6cc6ec; }
-.heatmap-cell.l3 { background: #2d8fb9; }
-.heatmap-cell.l4 { background: #ff9eb5; }
+.heatmap-cell.l1 { background: #c2ddf2; }
+.heatmap-cell.l2 { background: #6ca6d6; }
+.heatmap-cell.l3 { background: #2d6fb9; }
+.heatmap-cell.l4 { background: #1c466e; }
 :root[data-theme="dark"] .heatmap-cell,
 :root[data-theme="auto"] .heatmap-cell { background: #1a2d44; }
 :root[data-theme="dark"] .heatmap-cell.l1,
@@ -757,7 +836,7 @@ textarea {
 :root[data-theme="dark"] .heatmap-cell.l3,
 :root[data-theme="auto"] .heatmap-cell.l3 { background: #6cc6ec; }
 :root[data-theme="dark"] .heatmap-cell.l4,
-:root[data-theme="auto"] .heatmap-cell.l4 { background: #ff9eb5; }
+:root[data-theme="auto"] .heatmap-cell.l4 { background: #8fd0f5; }
 
 @media (prefers-color-scheme: dark) {
   :root[data-theme="auto"] .heatmap-cell { background: #1a2d44; }
@@ -780,31 +859,6 @@ textarea {
 }
 .heatmap-legend .scale .heatmap-cell {
   width: 12px; height: 12px;
-}
-
-.heatmap-months {
-  display: flex;
-  font-size: 10px;
-  color: var(--ink-soft);
-  margin-top: 4px;
-  padding-left: 24px;
-  user-select: none;
-}
-
-.heatmap-row-labels {
-  display: grid;
-  grid-template-rows: repeat(7, 12px);
-  gap: 2px;
-  font-size: 9px;
-  color: var(--ink-soft);
-  text-align: right;
-  padding-right: 4px;
-}
-
-.heatmap-flex {
-  display: flex;
-  align-items: flex-start;
-  min-width: 0;
 }
 
 /* === Podium === */
@@ -916,10 +970,14 @@ textarea {
 }
 .songs-tools {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
   gap: 8px;
   margin: 10px 0 12px;
+  padding-bottom: 4px;
 }
+.songs-tools > * { flex: 0 0 auto; }
 body[data-audience="listener"] #setlist-planner,
 body[data-audience="listener"] [data-mobile-panel-toggle="setlist"] {
   display: none !important;
@@ -2489,7 +2547,7 @@ body[data-audience="listener"] [data-mobile-panel-toggle="setlist"] {
   transition: filter 0.12s ease;
 }
 .bar-list .bar-bar.accent {
-  background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+  background: linear-gradient(90deg, #db006f, #a8004f);
 }
 .bar-list .bar-value {
   font-size: 13px;
@@ -3019,14 +3077,8 @@ textarea:focus-visible {
 }
 
 .hero:before {
-  content: "ARCHIVE MODULE / DATA_CORE";
-  display: block;
-  margin-bottom: 10px;
-  color: var(--archivist-gold);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  content: none;
+  display: none;
 }
 
 .hero:after { display: none; }
@@ -3664,8 +3716,8 @@ main.container {
 }
 
 .hero::before {
-  content: "ARCHIVE MODULE / SH1AN_DATA";
-  display: block;
+  content: none;
+  display: none;
   grid-column: 1;
   margin: 0 0 8px;
   color: var(--accent-strong);
@@ -4568,23 +4620,23 @@ textarea:focus,
 }
 
 .heatmap-cell.l1 {
-  background: #223548 !important;
+  background: #234a6b !important;
   border-color: rgba(175, 201, 230, 0.22) !important;
 }
 
 .heatmap-cell.l2 {
-  background: #31516d !important;
+  background: #2c6aa3 !important;
   border-color: rgba(175, 201, 230, 0.32) !important;
 }
 
 .heatmap-cell.l3 {
-  background: #5f7891 !important;
+  background: #4a90c8 !important;
   border-color: rgba(199, 226, 255, 0.45) !important;
 }
 
 .heatmap-cell.l4 {
-  background: #e9c176 !important;
-  border-color: rgba(255, 222, 165, 0.62) !important;
+  background: #6fb8e6 !important;
+  border-color: rgba(199, 226, 255, 0.62) !important;
 }
 
 .heatmap-cell:hover {
@@ -4600,7 +4652,10 @@ textarea:focus,
 
 .bar-bar {
   border-radius: 0 !important;
-  background: linear-gradient(90deg, rgba(199, 226, 255, 0.85), rgba(233, 193, 118, 0.75)) !important;
+  background: linear-gradient(90deg, #5fa0d6, #367ebf) !important;
+}
+.bar-bar.accent {
+  background: linear-gradient(90deg, #db006f, #a8004f) !important;
 }
 
 .bar-track {
@@ -4723,10 +4778,10 @@ textarea:focus,
   font-weight: 800;
 }
 
-.schedule-cell.l1 { background: #223548; }
-.schedule-cell.l2 { background: #31516d; }
-.schedule-cell.l3 { background: #5f7891; }
-.schedule-cell.l4 { background: #e9c176; color: #261900; }
+.schedule-cell.l1 { background: #234a6b; }
+.schedule-cell.l2 { background: #2c6aa3; }
+.schedule-cell.l3 { background: #4a90c8; }
+.schedule-cell.l4 { background: #6fb8e6; color: #0b1f30; }
 
 @media (max-width: 760px) {
   .card-title,
@@ -4753,30 +4808,23 @@ textarea:focus,
 body {
   --db-sidebar-collapsed: 80px;
   --db-sidebar-expanded: 248px;
-  --db-sidebar-current: var(--db-sidebar-collapsed);
+  /* 左バーは常時展開がデフォルト。折り畳み時のみアイコン幅。 */
+  --db-sidebar-current: var(--db-sidebar-expanded);
   transition: padding-left 0.18s ease;
 }
 
-body:has(.tabs:hover),
-body:has(.tabs:focus-within),
-body.sidebar-open,
-body.profile-menu-open,
-body.sidebar-pinned {
-  --db-sidebar-current: var(--db-sidebar-expanded);
-  padding-left: var(--db-sidebar-expanded);
+body.sidebar-collapsed {
+  --db-sidebar-current: var(--db-sidebar-collapsed);
 }
 
-body:has(.tabs:hover) .topbar,
-body:has(.tabs:focus-within) .topbar,
-body.sidebar-open .topbar,
-body.profile-menu-open .topbar,
-body.sidebar-pinned .topbar,
-body:has(.tabs:hover) #music-bar,
-body:has(.tabs:focus-within) #music-bar,
-body.sidebar-open #music-bar,
-body.profile-menu-open #music-bar,
-body.sidebar-pinned #music-bar {
-  left: var(--db-sidebar-expanded);
+/* デスクトップのレイアウト反映（モバイルは別レイアウトを維持するため min-width で限定）。 */
+@media (min-width: 1021px) {
+  body { padding-left: var(--db-sidebar-expanded); }
+  body.sidebar-collapsed { padding-left: var(--db-sidebar-collapsed); }
+  .topbar,
+  #music-bar { left: var(--db-sidebar-expanded); }
+  body.sidebar-collapsed .topbar,
+  body.sidebar-collapsed #music-bar { left: var(--db-sidebar-collapsed); }
 }
 
 .tabs {
@@ -4798,13 +4846,38 @@ body.sidebar-pinned #music-bar {
 }
 
 .db-sidebar-head {
-  display: grid;
-  grid-template-columns: 56px 1fr;
+  display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
   min-height: 48px;
   margin-bottom: 16px;
+}
+
+.db-sidebar-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.db-sidebar-toggle svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.db-sidebar-toggle:hover {
+  border-color: var(--primary) !important;
+  color: var(--primary);
 }
 
 .db-sidebar-mark {
@@ -4827,36 +4900,6 @@ body.sidebar-pinned #music-bar {
   clip-path: polygon(16% 10%, 84% 10%, 84% 24%, 16% 24%, 16% 10%, 16% 43%, 84% 43%, 84% 57%, 16% 57%, 16% 43%, 16% 76%, 84% 76%, 84% 90%, 16% 90%, 16% 76%);
 }
 
-.db-sidebar-pin {
-  justify-self: end;
-  display: inline-grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--border) !important;
-  border-radius: 6px !important;
-  background: #15181c !important;
-  color: var(--ink-mute);
-  opacity: 0;
-  pointer-events: none;
-}
-
-.tabs:hover .db-sidebar-pin,
-.tabs:focus-within .db-sidebar-pin,
-body.sidebar-open .db-sidebar-pin,
-body.profile-menu-open .db-sidebar-pin,
-body.sidebar-pinned .db-sidebar-pin {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.db-sidebar-pin:hover,
-.db-sidebar-pin[aria-pressed="true"] {
-  border-color: var(--primary) !important;
-  color: var(--primary);
-  background: var(--primary-soft) !important;
-}
-
 .tab-btn {
   justify-content: flex-start;
   gap: 14px;
@@ -4869,6 +4912,7 @@ body.sidebar-pinned .db-sidebar-pin {
   flex: 0 0 24px;
 }
 
+/* 既定（展開）はラベル表示。折り畳み時のみアイコンのみ。 */
 .tab-btn span:not(.tab-icon) {
   position: static;
   width: auto;
@@ -4876,39 +4920,30 @@ body.sidebar-pinned .db-sidebar-pin {
   overflow: hidden;
   clip: auto;
   white-space: nowrap;
-  opacity: 0;
-  transform: translateX(-6px);
+  opacity: 1;
+  transform: none;
   transition: opacity 0.14s ease, transform 0.14s ease;
 }
 
-.tabs:hover .tab-btn span:not(.tab-icon),
-.tabs:focus-within .tab-btn span:not(.tab-icon),
-body.sidebar-open .tab-btn span:not(.tab-icon),
-body.profile-menu-open .tab-btn span:not(.tab-icon),
-body.sidebar-pinned .tab-btn span:not(.tab-icon) {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-body:not(.sidebar-pinned):not(.sidebar-open):not(.profile-menu-open) .tabs:not(:hover):not(:focus-within) .tab-btn {
+body.sidebar-collapsed .tab-btn {
   justify-content: center;
   padding: 0 !important;
 }
 
-body:not(.sidebar-pinned):not(.sidebar-open):not(.profile-menu-open) .tabs:not(:hover):not(:focus-within) .tab-btn span:not(.tab-icon) {
+body.sidebar-collapsed .tab-btn span:not(.tab-icon) {
   display: none !important;
 }
 
-body:not(.sidebar-pinned):not(.sidebar-open):not(.profile-menu-open) .tabs:not(:hover):not(:focus-within) .tab-btn .tab-icon {
+body.sidebar-collapsed .tab-btn .tab-icon {
   margin: 0 auto;
 }
 
-body:not(.sidebar-pinned):not(.sidebar-open):not(.profile-menu-open) .tabs:not(:hover):not(:focus-within) .db-sidebar-head {
-  grid-template-columns: 1fr;
+body.sidebar-collapsed .db-sidebar-head {
+  justify-content: center;
 }
 
-body:not(.sidebar-pinned):not(.sidebar-open):not(.profile-menu-open) .tabs:not(:hover):not(:focus-within) .db-sidebar-mark {
-  margin-inline: auto;
+body.sidebar-collapsed .db-sidebar-mark {
+  display: none;
 }
 
 .db-sidebar-profile {
@@ -4967,16 +5002,17 @@ body:not(.sidebar-pinned):not(.sidebar-open):not(.profile-menu-open) .tabs:not(:
   font-size: 11px;
 }
 
-.tabs:hover .db-profile-text,
-.tabs:focus-within .db-profile-text,
-body.sidebar-open .db-profile-text,
-body.profile-menu-open .db-profile-text,
-body.sidebar-pinned .db-profile-text {
+/* 既定（展開）はプロフィール名を表示。折り畳み時はアバターのみ中央寄せ。 */
+.db-profile-text {
   opacity: 1;
-  transform: translateX(0);
+  transform: none;
 }
 
-body:not(.sidebar-pinned):not(.sidebar-open):not(.profile-menu-open) .tabs:not(:hover):not(:focus-within) .db-profile-button {
+body.sidebar-collapsed .db-profile-text {
+  display: none;
+}
+
+body.sidebar-collapsed .db-profile-button {
   display: flex;
   justify-content: center;
 }
@@ -5089,16 +5125,28 @@ body:not(.sidebar-pinned):not(.sidebar-open):not(.profile-menu-open) .tabs:not(:
 .song-history-cell {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 5px;
+  flex-wrap: nowrap;
+  gap: 8px;
   color: var(--ink-mute);
   font-size: 12px;
+  white-space: nowrap;
 }
-
+/* 日付・経過・回数を固定幅で行間に揃え、ガタつきを防ぐ */
+.song-history-cell .last-date {
+  flex: 0 0 76px;
+}
+.song-history-cell .badge {
+  flex: 0 0 auto;
+  min-width: 52px;
+  text-align: center;
+}
 .song-count-inline {
-  color: #f4c96d;
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: var(--primary-strong);
   font-size: 11px;
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
 .song-tags-cell,
@@ -5462,26 +5510,18 @@ body:not(.sidebar-pinned):not(.sidebar-open):not(.profile-menu-open) .tabs:not(:
 }
 
 @media (min-width: 761px) and (max-width: 1020px) {
-  body:has(.tabs:hover),
-  body:has(.tabs:focus-within),
-  body.sidebar-open,
-  body.profile-menu-open,
-  body.sidebar-pinned {
-    padding-left: var(--db-sidebar-expanded);
-  }
-
-  .tabs {
-    width: var(--db-sidebar-current) !important;
-  }
+  body { padding-left: var(--db-sidebar-expanded); }
+  body.sidebar-collapsed { padding-left: var(--db-sidebar-collapsed); }
+  .tabs { width: var(--db-sidebar-current) !important; }
+  .topbar,
+  #music-bar { left: var(--db-sidebar-expanded); }
+  body.sidebar-collapsed .topbar,
+  body.sidebar-collapsed #music-bar { left: var(--db-sidebar-collapsed); }
 }
 
 @media (max-width: 760px) {
   body,
-  body:has(.tabs:hover),
-  body:has(.tabs:focus-within),
-  body.sidebar-open,
-  body.profile-menu-open,
-  body.sidebar-pinned {
+  body.sidebar-collapsed {
     padding-left: 0;
   }
 
@@ -5494,16 +5534,10 @@ body:not(.sidebar-pinned):not(.sidebar-open):not(.profile-menu-open) .tabs:not(:
     display: none;
   }
 
-  body:has(.tabs:hover) .topbar,
-  body:has(.tabs:focus-within) .topbar,
-  body.sidebar-open .topbar,
-  body.profile-menu-open .topbar,
-  body.sidebar-pinned .topbar,
-  body:has(.tabs:hover) #music-bar,
-  body:has(.tabs:focus-within) #music-bar,
-  body.sidebar-open #music-bar,
-  body.profile-menu-open #music-bar,
-  body.sidebar-pinned #music-bar {
+  .topbar,
+  #music-bar,
+  body.sidebar-collapsed .topbar,
+  body.sidebar-collapsed #music-bar {
     left: 0;
   }
 }
@@ -5721,12 +5755,14 @@ body:not(.sidebar-pinned):not(.sidebar-open):not(.profile-menu-open) .tabs:not(:
 
 /* Sidebar bits */
 :root[data-theme="light"] .db-sidebar-mark,
-:root[data-theme="light"] .db-sidebar-pin,
-:root[data-theme="light"] .db-sidebar-head,
 :root[data-theme="light"] .db-sidebar-profile {
   background: var(--lt-chrome) !important;
   color: var(--ink-soft) !important;
   border-color: var(--lt-line-soft) !important;
+}
+:root[data-theme="light"] .db-sidebar-toggle {
+  color: var(--ink-soft) !important;
+  border-color: var(--lt-line) !important;
 }
 
 /* Topbar chrome: search + form controls */
@@ -6213,3 +6249,130 @@ body:not(.sidebar-pinned):not(.sidebar-open):not(.profile-menu-open) .tabs:not(:
 :root:not([data-theme="light"]) .ranking-table-head {
   border-bottom-color: rgba(199, 226, 255, 0.08) !important;
 }
+
+/* ============================================================
+   ハイブリッドナビ:
+   - 既定: 左サイドバー（常時展開 + ハンバーガーで折り畳み）
+   - body.nav-top（プレイリストタブ表示中 / 動画ビュアー表示中）:
+     上部の横並びメニュー + 本文フルワイド（一覧が縮まない）
+   最後に読み込むため !important で既存サイドバーCSSに勝つ。
+   ============================================================ */
+body.nav-top { padding-left: 0 !important; }
+body.nav-top .topbar,
+body.nav-top #music-bar { left: 0 !important; }
+
+/* nav-top ではサイドバー専用UI（折り畳みハンバーガー/プロフィール）を隠す */
+body.nav-top .db-sidebar-head,
+body.nav-top .db-sidebar-profile { display: none !important; }
+
+/* 横並びトップナビ */
+body.nav-top .tabs {
+  position: static !important;
+  top: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 0 0 16px !important;
+  padding: 8px 10px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: thin;
+}
+body.nav-top .tabs::before { display: none !important; }
+
+body.nav-top .tab-btn {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 8px 14px !important;
+  overflow: visible !important;
+}
+body.nav-top .tab-btn span:not(.tab-icon) {
+  display: inline !important;
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  opacity: 1 !important;
+  transform: none !important;
+  clip: auto !important;
+}
+
+/* 一覧はスライダーではなく通常グリッド（プレイリストは常に nav-top なので全幅）。
+   サムネを大きく: 歌枠一覧=4列 / 歌みた・オリ曲=5列。 */
+.pl-stream-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 18px !important;
+  overflow: visible !important;
+}
+.pl-stream-grid > .pl-sg-card { flex: initial !important; }
+.mv-grid {
+  display: grid !important;
+  grid-template-columns: repeat(5, 1fr) !important;
+  gap: 18px !important;
+  overflow: visible !important;
+}
+.mv-grid > .mv-card { flex: initial !important; }
+
+/* 狭い画面では列数を落としてサムネが潰れないようにする */
+@media (max-width: 900px) {
+  .pl-stream-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .mv-grid { grid-template-columns: repeat(3, 1fr) !important; }
+}
+@media (max-width: 560px) {
+  .pl-stream-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .mv-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* ── ランキング期間: セグメント型スライド切替 ───────────────────────
+   All Time / This Month / Last Month / 7 Days / Select Month を
+   連結したピル状のセグメントにし、選択をスライド的に切り替える。 */
+.period-seg {
+  display: inline-flex !important;
+  flex: 0 0 auto;
+  align-items: stretch;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  border: 1px solid var(--border);
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.period-seg::-webkit-scrollbar { display: none; }
+.period-seg .period-btn {
+  border: 0 !important;
+  background: transparent !important;
+  border-radius: 999px !important;
+  min-height: 28px !important;
+  padding: 4px 16px !important;
+  color: var(--ink-soft) !important;
+  box-shadow: none !important;
+  white-space: nowrap;
+  transition: color 0.18s ease, background 0.18s ease !important;
+}
+.period-seg .period-btn:hover:not(:disabled):not(.active) {
+  background: rgba(54, 126, 191, 0.16) !important;
+  color: var(--primary-strong) !important;
+}
+.period-seg .period-btn.active {
+  background: linear-gradient(180deg, #5fa0d6, #367ebf) !important;
+  color: #fff !important;
+}
+:root[data-theme="light"] .period-seg .period-btn,
+:root[data-theme="light"] .period-seg .period-btn span,
+:root[data-theme="light"] .period-seg .period-btn small { color: var(--ink-soft) !important; }
+:root[data-theme="light"] .period-seg .period-btn.active,
+:root[data-theme="light"] .period-seg .period-btn.active span,
+:root[data-theme="light"] .period-seg .period-btn.active small { color: #ffffff !important; }
+/* セレクタ（月指定/比較）はセグメントの右に並べる */
+.ranking-period-selector { gap: 10px; align-items: center; }

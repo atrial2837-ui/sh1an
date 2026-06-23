@@ -59,17 +59,19 @@ import { buildChannelDataset, mergeChannelDatasets } from '../domain/analytics/c
  * @returns {Promise<BuildDatasetResult>}
  */
 export async function buildDataset(deps) {
-  const [channels, artists, songs, streams, streamSongs, songChannelStats] = await Promise.all([
+  const [channels, artists, songs, streams, streamSongs, songChannelStats, communityTimestamps] = await Promise.all([
     deps.channels.findAll(),
     deps.artists.findAll(),
     deps.songs.findAll(),
     deps.streams.findAll(),
     deps.streamSongs.findAll(),
     deps.stats.findAll(),
+    // タイムスタンプは任意依存（未提供なら空配列）。承認済みのみを公式 t として使う。
+    deps.timestamps?.listApproved ? deps.timestamps.listApproved() : Promise.resolve([]),
   ]);
 
   /** @type {import('../domain/analytics/channel-stats.js').RawTables} */
-  const raw = { channels, artists, songs, streams, streamSongs, songChannelStats };
+  const raw = { channels, artists, songs, streams, streamSongs, songChannelStats, communityTimestamps };
 
   // today を Clock から取得し YYYY-MM-DD 形式に変換
   const today = deps.clock.now().toISOString().slice(0, 10);

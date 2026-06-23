@@ -83,6 +83,17 @@ export class Router {
   }
 
   /**
+   * PATCH ルートを登録する。
+   *
+   * @param {string|RegExp} path
+   * @param {(ctx: RouteContext) => Promise<Response>|Response} handler
+   * @returns {this}
+   */
+  patch(path, handler) {
+    return this.on('PATCH', path, handler);
+  }
+
+  /**
    * DELETE ルートを登録する。
    *
    * @param {string|RegExp} path
