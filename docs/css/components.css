@@ -517,13 +517,14 @@ button.official-link {
 .theme-toggle:hover {
   border-color: var(--primary);
 }
-/* テーマ切替: ツールチップ（ラベル非表示時もヒントを提供） */
+/* テーマ切替: ツールチップ（トップバー下向きに表示） */
 .theme-toggle::after {
   content: attr(data-tooltip);
   position: absolute;
-  bottom: calc(100% + 6px);
+  top: calc(100% + 6px);
+  bottom: auto;
   left: 50%;
-  transform: translateX(-50%) translateY(2px);
+  transform: translateX(-50%) translateY(-4px);
   background: var(--ink);
   color: var(--surface);
   font-size: 10px;
@@ -534,13 +535,20 @@ button.official-link {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.15s, transform 0.15s;
-  z-index: 10;
+  z-index: 200;
 }
 .theme-toggle:hover::after {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
-.theme-icon { font-size: 14px; }
+/* theme-iconをflex化してSVGのvertical-alignずれを排除 */
+.theme-icon {
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.theme-icon svg { display: block; vertical-align: 0; }
 .theme-label { font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-mute); }
 
 .load-more-btn {

@@ -189,10 +189,72 @@ textarea {
 }
 .dashboard-activity-card { grid-area: activity; }
 .dashboard-top-card { grid-area: top; }
-.dashboard-genre-card { grid-area: genre; }
-.dashboard-heatmap-card { grid-area: heatmap; }
 .dashboard-latest-card { grid-area: latest; }
-.dashboard-schedule-card { grid-area: schedule; }
+
+/* ジャンル分布: カード縦フレックス → チャートがカード高さを埋める */
+.dashboard-genre-card {
+  grid-area: genre;
+  display: flex;
+  flex-direction: column;
+}
+.dashboard-genre-card .chart-wrap {
+  flex: 1;
+  min-height: 160px;
+  height: auto !important;
+}
+
+/* ヒートマップ: カード縦フレックス → セルを大きくして余白を埋める */
+.dashboard-heatmap-card {
+  grid-area: heatmap;
+  display: flex;
+  flex-direction: column;
+}
+.dashboard-heatmap-card .heatmap-cal {
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.dashboard-heatmap-card .hm-days {
+  grid-template-rows: repeat(7, 1fr);
+  gap: 4px;
+  height: 100%;
+}
+.dashboard-heatmap-card .hm-day {
+  height: auto;
+  line-height: 1;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.dashboard-heatmap-card .hm-weeks {
+  flex: 1;
+  width: auto;
+}
+.dashboard-heatmap-card .hm-week {
+  flex: 1;
+  grid-template-rows: repeat(7, 1fr);
+  gap: 4px;
+  min-width: 18px;
+}
+.dashboard-heatmap-card .heatmap-cell {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  aspect-ratio: 1;
+}
+
+/* 曜日分布: カード縦フレックス → バーが均等に広がる */
+.dashboard-schedule-card {
+  grid-area: schedule;
+  display: flex;
+  flex-direction: column;
+}
+.dashboard-schedule-card .dow-dist {
+  flex: 1;
+  align-content: space-between;
+}
 .dashboard-list-card { grid-column: span 6; }
 .dashboard-list-month,
 .dashboard-list-year,
@@ -765,7 +827,7 @@ textarea {
 .heatmap-cal {
   display: grid;
   grid-template-columns: 24px 1fr;
-  grid-template-rows: auto auto;
+  grid-template-rows: auto 1fr;
   column-gap: 5px;
   row-gap: 4px;
   overflow-x: auto;
