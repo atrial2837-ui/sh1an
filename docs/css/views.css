@@ -107,10 +107,12 @@ textarea {
 .dashboard-overview-grid {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: minmax(240px, 0.85fr) minmax(320px, 1.15fr) minmax(420px, 1.5fr);
+  grid-template-columns: 1.4fr 1fr;
   grid-template-areas:
-    "activity latest genre"
-    "top schedule heatmap";
+    "latest activity"
+    "latest genre"
+    "schedule top"
+    "heatmap heatmap";
   gap: 12px;
   align-items: stretch;
   min-width: 0;
@@ -191,6 +193,29 @@ textarea {
 .dashboard-top-card { grid-area: top; }
 .dashboard-latest-card { grid-area: latest; }
 
+/* 最新の歌枠: サムネ横長（上）→ タイトル/情報 → セットリスト の縦積みレイアウト */
+.dashboard-latest-card .latest-stream-log {
+  display: flex;
+  flex-direction: column;
+  min-height: auto;
+}
+.dashboard-latest-card .latest-stream-thumb {
+  flex: 0 0 auto;
+  min-height: auto;
+  width: 100%;
+}
+.dashboard-latest-card .latest-stream-thumb img {
+  width: 100%;
+  height: auto;
+  min-height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: center;
+}
+.dashboard-latest-card .latest-stream-body {
+  flex: 1;
+}
+
 /* ジャンル分布: カード縦フレックス → チャートがカード高さを埋める */
 .dashboard-genre-card {
   grid-area: genre;
@@ -203,49 +228,50 @@ textarea {
   height: auto !important;
 }
 
-/* ヒートマップ: カード縦フレックス → セルを大きくして余白を埋める */
+/* ヒートマップ: 全幅横長・スクロールなし。14px×14pxセル + 2px gap で53週が収まる */
 .dashboard-heatmap-card {
   grid-area: heatmap;
   display: flex;
   flex-direction: column;
 }
 .dashboard-heatmap-card .heatmap-cal {
-  flex: 1;
-  min-height: 0;
-  overflow-x: auto;
+  grid-template-rows: auto auto;
+  overflow-x: hidden;
   overflow-y: hidden;
 }
+.dashboard-heatmap-card .hm-months {
+  gap: 2px;
+}
+.dashboard-heatmap-card .hm-month {
+  flex: 0 0 14px;
+  font-size: 9px;
+}
 .dashboard-heatmap-card .hm-days {
-  grid-template-rows: repeat(7, 1fr);
-  gap: 4px;
-  height: 100%;
+  grid-template-rows: repeat(7, 14px);
+  gap: 2px;
 }
 .dashboard-heatmap-card .hm-day {
-  height: auto;
-  line-height: 1;
-  font-size: 11px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
+  height: 14px;
+  line-height: 14px;
+  font-size: 10px;
+  font-weight: 700;
 }
 .dashboard-heatmap-card .hm-weeks {
-  flex: 1;
-  width: auto;
+  gap: 2px;
+  width: max-content;
 }
 .dashboard-heatmap-card .hm-week {
-  flex: 1;
-  grid-template-rows: repeat(7, 1fr);
-  gap: 4px;
-  min-width: 18px;
+  grid-template-rows: repeat(7, 14px);
+  gap: 2px;
+  width: 14px;
 }
 .dashboard-heatmap-card .heatmap-cell {
-  width: 100%;
-  height: auto;
-  border-radius: 4px;
-  aspect-ratio: 1;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
 }
 
-/* 曜日分布: カード縦フレックス → バーが均等に広がる */
+/* 曜日分布: 縦フレックス。バーは自然なgapで並べ中央揃え */
 .dashboard-schedule-card {
   grid-area: schedule;
   display: flex;
@@ -253,7 +279,8 @@ textarea {
 }
 .dashboard-schedule-card .dow-dist {
   flex: 1;
-  align-content: space-between;
+  align-content: center;
+  max-width: 480px;
 }
 .dashboard-list-card { grid-column: span 6; }
 .dashboard-list-month,
@@ -5607,45 +5634,42 @@ body.sidebar-collapsed .db-profile-button {
 /* Light theme: a cohesive tonal scale built around the #367ebf identity. */
 :root[data-theme="light"] {
   color-scheme: light;
-  /* Deeper page base so white panels read clearly against it. */
-  --bg-1: #e7eff8;
-  --bg-2: #d3e3f2;
-  --bg-radial-1: rgba(54, 126, 191, 0.12);
-  --bg-radial-2: rgba(95, 168, 223, 0.15);
-  --surface: #ffffff;
-  --surface-2: #eef4fb;
-  --surface-3: #e1ecf8;
-  --surface-glass: rgba(255, 255, 255, 0.96);
-  /* Stronger, clearly visible frames for separation. */
-  --border: #aecbe8;
-  --border-soft: #cadcef;
-  --border-strong: #7eb0de;
-  /* Light UI separates panels with elevation, not hard borders. */
-  --shadow-sm: 0 1px 2px rgba(20, 50, 80, 0.05), 0 4px 12px rgba(54, 126, 191, 0.07);
-  --shadow: 0 2px 6px rgba(20, 50, 80, 0.06), 0 12px 28px rgba(54, 126, 191, 0.10);
-  --shadow-lg: 0 8px 20px rgba(20, 50, 80, 0.08), 0 24px 48px rgba(54, 126, 191, 0.14);
-  --ink: #122336;
-  --ink-soft: #344c62;
-  --ink-mute: #5a7088;
+  --bg-1: #ccdff2;
+  --bg-2: #b9cfea;
+  --bg-radial-1: rgba(54, 126, 191, 0.20);
+  --bg-radial-2: rgba(95, 168, 223, 0.25);
+  --surface: #f2f8fd;
+  --surface-2: #e3eff9;
+  --surface-3: #d4e5f5;
+  --surface-glass: rgba(242, 248, 253, 0.96);
+  --border: #7ab0d8;
+  --border-soft: #98c4e5;
+  --border-strong: #367ebf;
+  --shadow-sm: 0 1px 3px rgba(20, 50, 80, 0.08), 0 4px 14px rgba(54, 126, 191, 0.10);
+  --shadow: 0 2px 8px rgba(20, 50, 80, 0.10), 0 12px 30px rgba(54, 126, 191, 0.14);
+  --shadow-lg: 0 8px 24px rgba(20, 50, 80, 0.12), 0 24px 52px rgba(54, 126, 191, 0.18);
+  --ink: #0f1e30;
+  --ink-soft: #2c4259;
+  --ink-mute: #4e6a82;
   --primary: #367ebf;
   --on-primary: #ffffff;
-  --primary-strong: #235889;
-  --primary-soft: #e2eef9;
+  --primary-strong: #1b4f8a;
+  --primary-soft: #d8ecfa;
   --accent: #5fa1d6;
-  --accent-strong: #1f5f99;
-  --accent-soft: #e9f3fb;
-  --archivist-frame: #cfe1f2;
-  --archivist-frame-strong: #8fbce4;
+  --accent-strong: #1a5490;
+  --accent-soft: #e4f1fb;
+  --archivist-frame: #b8d4ef;
+  --archivist-frame-strong: #6baad6;
   --archivist-frame-active: #367ebf;
-  --archivist-void: #eaf3fb;
-  --archivist-surface: #ffffff;
-  --archivist-module: #f2f8fd;
-  --archivist-module-high: #e6f0f9;
+  --archivist-void: #deeefa;
+  --archivist-surface: #f2f8fd;
+  --archivist-module: #e8f4fc;
+  --archivist-module-high: #d8ebf8;
   --archivist-gold: #367ebf;
 }
 
 :root[data-theme="light"] body {
-  background: linear-gradient(180deg, #eef4fb 0%, #e0eaf6 100%) fixed;
+  background: linear-gradient(160deg, #c8dcf0 0%, #b2cae6 100%) fixed;
   color: var(--ink);
 }
 
@@ -5751,19 +5775,46 @@ body.sidebar-collapsed .db-profile-button {
    authoritatively wins the cascade against the dark literals.
    ============================================================ */
 :root[data-theme="light"] {
-  --lt-panel: #ffffff;     /* cards / modules */
-  --lt-header: #dde9f7;    /* module header bands, switch tracks */
-  --lt-chrome: #eaf2fb;    /* buttons, search, rails, inputs */
-  --lt-raised: #d8e6f4;    /* hover / raised / grid base */
-  --lt-line: #aecbe8;
-  --lt-line-soft: #c8daed;
+  --lt-panel: #f2f8fd;     /* cards / modules — subtle blue tint */
+  --lt-header: #1f5ea0;    /* module header bands — deep blue */
+  --lt-chrome: #deedf9;    /* buttons, search, rails, inputs */
+  --lt-raised: #cce0f2;    /* hover / raised */
+  --lt-line: #6fa9d9;
+  --lt-line-soft: #93c1e5;
 }
 
 /* :root IS <html>, so target it directly (not a descendant).
    body keeps its own blueprint-grid background defined above. */
 :root[data-theme="light"] {
-  background: var(--bg-1) !important;
+  background: #b2cae6 !important;
 }
+
+/* Stat values / metrics: #367ebf accent for numbers */
+:root[data-theme="light"] .stat-value,
+:root[data-theme="light"] .activity-row strong,
+:root[data-theme="light"] .mbar-title { color: var(--primary-strong) !important; }
+
+/* Period buttons inside segment control get white base (on deep bg) */
+:root[data-theme="light"] .period-seg {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+}
+:root[data-theme="light"] .period-seg .period-btn {
+  color: rgba(255, 255, 255, 0.80) !important;
+}
+:root[data-theme="light"] .period-seg .period-btn.active {
+  background: linear-gradient(180deg, #4a93d4, #367ebf) !important;
+  color: #ffffff !important;
+}
+
+/* Ranking table head on light: deeper blue to match card-title gradient */
+:root[data-theme="light"] .ranking-table-head {
+  background: linear-gradient(90deg, #1e5898 0%, #367ebf 100%) !important;
+  color: #ffffff !important;
+  border-color: #1a4e8c !important;
+}
+:root[data-theme="light"] .ranking-table-head span,
+:root[data-theme="light"] .ranking-table-head small { color: rgba(255,255,255,0.80) !important; }
 
 /* Panels / cards */
 :root[data-theme="light"] .card,
@@ -5779,11 +5830,21 @@ body.sidebar-collapsed .db-profile-button {
   color: var(--ink) !important;
 }
 
-/* Module header bands */
+/* Module header bands — #367ebf 基調グラデーション */
 :root[data-theme="light"] .card-title {
-  background: var(--lt-header) !important;
-  color: var(--ink) !important;
-  border-color: var(--lt-line-soft) !important;
+  background: linear-gradient(90deg, #1e5898 0%, #367ebf 60%, #4a8fd4 100%) !important;
+  color: #ffffff !important;
+  border-color: #1a4e8c !important;
+}
+:root[data-theme="light"] .card-title .pill,
+:root[data-theme="light"] .card-title .badge {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+:root[data-theme="light"] .card-title svg,
+:root[data-theme="light"] .card-title .ui-icon {
+  color: rgba(255, 255, 255, 0.85) !important;
 }
 
 /* Pills / badges / tags */
@@ -5796,35 +5857,39 @@ body.sidebar-collapsed .db-profile-button {
   border-color: var(--lt-line-soft) !important;
 }
 
-/* Left nav rail */
+/* Left nav rail — deep #367ebf sidebar */
 :root[data-theme="light"] .tabs {
-  background: var(--lt-chrome) !important;
-  border-color: var(--lt-line-soft) !important;
+  background: linear-gradient(180deg, #1a4876 0%, #265e9e 100%) !important;
+  border-color: #16375d !important;
 }
 :root[data-theme="light"] .tab-btn {
   background: transparent !important;
-  color: var(--ink-soft) !important;
+  color: rgba(255, 255, 255, 0.70) !important;
 }
 :root[data-theme="light"] .tab-btn:hover {
-  background: var(--lt-raised) !important;
-  color: var(--primary-strong) !important;
+  background: rgba(255, 255, 255, 0.10) !important;
+  color: #ffffff !important;
 }
 :root[data-theme="light"] .tab-btn.active,
 :root[data-theme="light"] .tab-btn[aria-selected="true"] {
-  background: var(--primary-soft) !important;
-  color: var(--primary-strong) !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff !important;
 }
 
-/* Sidebar bits */
+/* Sidebar bits — match deep blue background */
 :root[data-theme="light"] .db-sidebar-mark,
 :root[data-theme="light"] .db-sidebar-profile {
-  background: var(--lt-chrome) !important;
-  color: var(--ink-soft) !important;
-  border-color: var(--lt-line-soft) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
 }
 :root[data-theme="light"] .db-sidebar-toggle {
-  color: var(--ink-soft) !important;
-  border-color: var(--lt-line) !important;
+  color: rgba(255, 255, 255, 0.72) !important;
+  border-color: rgba(255, 255, 255, 0.20) !important;
+}
+:root[data-theme="light"] .db-sidebar-toggle:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
 }
 
 /* Topbar chrome: search + form controls */
@@ -5850,7 +5915,14 @@ body.sidebar-collapsed .db-profile-button {
 :root[data-theme="light"] .icon-btn:hover,
 :root[data-theme="light"] .theme-toggle:hover {
   background: var(--lt-raised) !important;
+  border-color: var(--primary) !important;
   color: var(--primary-strong) !important;
+}
+/* Topbar itself: white with bottom blue accent line */
+:root[data-theme="light"] .topbar {
+  background: rgba(255, 255, 255, 0.97) !important;
+  border-bottom: 2px solid rgba(54, 126, 191, 0.30) !important;
+  box-shadow: 0 1px 0 var(--lt-line-soft), 0 6px 18px rgba(54, 126, 191, 0.08) !important;
 }
 
 /* Segmented switches (listener/streamer, channel, auto) */
