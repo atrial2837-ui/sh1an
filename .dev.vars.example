@@ -1,0 +1,17 @@
+# Local Wrangler Pages Dev Environment Variables
+# Copy to .dev.vars (git-ignored) and customize as needed
+# Note: .dev.vars is auto-loaded by `wrangler pages dev`
+
+# Admin dashboard authentication (optional for local)
+ADMIN_TOKEN=dev-token-12345
+
+# GitHub Actions integration (required only if testing admin → GA trigger)
+GITHUB_ACTIONS_TOKEN=ghp_placeholder_not_used_locally
+GITHUB_OWNER=atrial2837-ui
+GITHUB_REPO=sh1an
+GITHUB_STATIC_WORKFLOW=update-static-data.yml
+GITHUB_STATIC_REF=main
+GITHUB_STATIC_ENV=production
+
+# Key reference CSV (optional for local)
+KEY_REFERENCE_CSV_URL=https://example.com/keys.csv

@@ -10,10 +10,13 @@
     "build:admin": "node build.mjs admin",
     "smoke": "node scripts/smoke.mjs",
     "arch": "node scripts/arch-lint.mjs",
-    "typecheck": "tsc -p jsconfig.json --noEmit"
+    "typecheck": "tsc -p jsconfig.json --noEmit",
+    "dev": "wrangler pages dev docs",
+    "db:local": "node scripts/db-local.mjs"
   },
   "devDependencies": {
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.25.0",
+    "wrangler": "^4.105.0"
   },
   "dependencies": {
     "fuse.js": "7.0.0"
