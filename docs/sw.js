@@ -28,9 +28,11 @@ self.addEventListener('fetch', event => {
 
   const path = url.pathname;
 
-  // /data/*.json → network-first（歌枠データ更新を即時反映）
+  // /data/*.json → stale-while-revalidate（キャッシュを即返し、裏で更新）
+  // LCP: データをキャッシュから即座に返しダッシュボード描画を速める。
+  // 更新は次ページロード時に反映される（リロードボタンで強制更新可）。
   if (path.startsWith('/data/') && path.endsWith('.json')) {
-    event.respondWith(networkFirst(request, DATA_CACHE));
+    event.respondWith(staleWhileRevalidate(request, DATA_CACHE));
     return;
   }
 
