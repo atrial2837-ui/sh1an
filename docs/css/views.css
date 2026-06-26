@@ -5973,6 +5973,221 @@ body.sidebar-collapsed .db-profile-button {
   border-top-color: rgba(54, 126, 191, 0.14) !important;
 }
 
+/* Dashboard heatmap v2: month cards with self-contained metrics. */
+.dashboard-overview-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(520px, 1.25fr) !important;
+}
+
+@media (max-width: 980px) and (min-width: 901px) {
+  .dashboard-overview-grid {
+    grid-template-columns: minmax(0, 0.9fr) minmax(500px, 1.1fr) !important;
+  }
+}
+
+.dashboard-heatmap-card {
+  min-width: 0 !important;
+}
+
+.dashboard-heatmap-card .heatmap-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.dashboard-heatmap-card .heatmap-summary > div {
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid rgba(95, 168, 223, 0.14);
+  background: rgba(12, 18, 24, 0.42);
+}
+
+.dashboard-heatmap-card .heatmap-summary span {
+  display: block;
+  margin-bottom: 4px;
+  color: rgba(226, 232, 240, 0.62);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.dashboard-heatmap-card .heatmap-summary strong {
+  display: block;
+  overflow: hidden;
+  color: var(--primary-strong);
+  font-size: 13px;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-heatmap-card .heatmap-month-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.dashboard-heatmap-card .heatmap-month-card {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(95, 168, 223, 0.14);
+  background:
+    linear-gradient(rgba(95, 168, 223, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(95, 168, 223, 0.025) 1px, transparent 1px),
+    rgba(10, 14, 19, 0.5);
+  background-size: 18px 18px;
+}
+
+.dashboard-heatmap-card .heatmap-month-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.dashboard-heatmap-card .heatmap-month-head span {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.dashboard-heatmap-card .heatmap-month-head strong {
+  color: var(--primary-strong);
+  font-size: 15px;
+  font-feature-settings: var(--tnum);
+}
+
+.dashboard-heatmap-card .heatmap-month-head strong::after {
+  content: "曲";
+  margin-left: 2px;
+  color: var(--ink-mute);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.dashboard-heatmap-card .heatmap-month-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 8px;
+  color: rgba(226, 232, 240, 0.62);
+  font-size: 9px;
+  line-height: 1.1;
+}
+
+.dashboard-heatmap-card .heatmap-month-meta span {
+  padding: 3px 5px;
+  border: 1px solid rgba(95, 168, 223, 0.12);
+  background: rgba(95, 168, 223, 0.06);
+}
+
+.dashboard-heatmap-card .heatmap-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.dashboard-heatmap-card .heatmap-day {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgba(95, 168, 223, 0.08);
+  background: rgba(18, 28, 38, 0.86);
+  color: rgba(226, 232, 240, 0.34);
+  font-size: 8px;
+  line-height: 1;
+  font-feature-settings: var(--tnum);
+}
+
+.dashboard-heatmap-card .heatmap-day.l1,
+.dashboard-heatmap-card .heatmap-day.l2,
+.dashboard-heatmap-card .heatmap-day.l3,
+.dashboard-heatmap-card .heatmap-day.l4 {
+  color: #ffffff;
+}
+
+.dashboard-heatmap-card .heatmap-day.l1 {
+  background: #254f74;
+  border-color: rgba(143, 199, 242, 0.28);
+}
+
+.dashboard-heatmap-card .heatmap-day.l2 {
+  background: #367ebf;
+  border-color: rgba(143, 199, 242, 0.42);
+}
+
+.dashboard-heatmap-card .heatmap-day.l3 {
+  background: #6ab5e8;
+  border-color: rgba(184, 224, 255, 0.58);
+}
+
+.dashboard-heatmap-card .heatmap-day.l4 {
+  background: #b8e0ff;
+  border-color: rgba(255, 255, 255, 0.72);
+  color: #0b1722;
+}
+
+.dashboard-heatmap-card .heatmap-day:hover {
+  z-index: 1;
+  transform: translateY(-1px) scale(1.08);
+  outline: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+.dashboard-heatmap-card .heatmap-legend {
+  justify-content: space-between !important;
+  margin-top: 12px !important;
+}
+
+:root[data-theme="light"] .dashboard-heatmap-card .heatmap-summary > div,
+:root[data-theme="light"] .dashboard-heatmap-card .heatmap-month-card {
+  border-color: rgba(54, 126, 191, 0.18) !important;
+  background:
+    linear-gradient(rgba(54, 126, 191, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(54, 126, 191, 0.025) 1px, transparent 1px),
+    rgba(255, 255, 255, 0.76) !important;
+}
+
+:root[data-theme="light"] .dashboard-heatmap-card .heatmap-summary span,
+:root[data-theme="light"] .dashboard-heatmap-card .heatmap-month-meta {
+  color: var(--ink-mute) !important;
+}
+
+:root[data-theme="light"] .dashboard-heatmap-card .heatmap-month-meta span {
+  border-color: rgba(54, 126, 191, 0.14) !important;
+  background: rgba(54, 126, 191, 0.08) !important;
+}
+
+:root[data-theme="light"] .dashboard-heatmap-card .heatmap-day {
+  border-color: rgba(54, 126, 191, 0.12) !important;
+  background: #eef6fc !important;
+  color: rgba(22, 36, 51, 0.42) !important;
+}
+
+:root[data-theme="light"] .dashboard-heatmap-card .heatmap-day.l1 { background: #c2dcf1 !important; color: #173047 !important; }
+:root[data-theme="light"] .dashboard-heatmap-card .heatmap-day.l2 { background: #93c1e6 !important; color: #102638 !important; }
+:root[data-theme="light"] .dashboard-heatmap-card .heatmap-day.l3 { background: #5b9ed8 !important; color: #ffffff !important; }
+:root[data-theme="light"] .dashboard-heatmap-card .heatmap-day.l4 { background: #367ebf !important; color: #ffffff !important; }
+
+@media (max-width: 1200px) {
+  .dashboard-heatmap-card .heatmap-month-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard-heatmap-card .heatmap-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .dashboard-heatmap-card .heatmap-month-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Modals / dialogs / menus */
 :root[data-theme="light"] .modal-backdrop {
   background: rgba(20, 40, 60, 0.28) !important;
@@ -6732,3 +6947,89 @@ body.nav-top .tab-btn span:not(.tab-icon) {
 :root[data-theme="light"] .pl-card-count,
 :root[data-theme="light"] .latest-stream-body p { color: #367ebf !important; }
 :root[data-theme="light"] #panel-ranking .ranking-count-cell .count { color: #2668a8 !important; }
+
+/* Final dashboard readability override: keep the activity heatmap wide and self-explanatory. */
+.dashboard-overview-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-areas:
+    "latest"
+    "genre"
+    "heatmap" !important;
+}
+
+.dashboard-genre-card {
+  grid-area: genre !important;
+}
+
+.dashboard-heatmap-card {
+  grid-area: heatmap !important;
+}
+
+.dashboard-heatmap-card .heatmap-guide {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(95, 168, 223, 0.14);
+  background: rgba(54, 126, 191, 0.07);
+}
+
+.dashboard-heatmap-card .heatmap-guide strong {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.dashboard-heatmap-card .heatmap-guide span {
+  color: rgba(226, 232, 240, 0.68);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.dashboard-heatmap-card .heatmap-month-grid {
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)) !important;
+  align-items: start;
+}
+
+.dashboard-heatmap-card .heatmap-month-card {
+  padding: 11px !important;
+}
+
+.dashboard-heatmap-card .heatmap-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+  margin: 0 0 4px;
+  color: rgba(226, 232, 240, 0.46);
+  font-size: 8px;
+  line-height: 1;
+  text-align: center;
+}
+
+.dashboard-heatmap-card .heatmap-month-meta {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 4px !important;
+  margin-bottom: 7px !important;
+}
+
+.dashboard-heatmap-card .heatmap-month-meta span {
+  overflow: hidden;
+  padding: 3px 4px !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-heatmap-card .heatmap-day {
+  font-size: 8px !important;
+}
+
+:root[data-theme="light"] .dashboard-heatmap-card .heatmap-guide {
+  border-color: rgba(54, 126, 191, 0.18) !important;
+  background: rgba(54, 126, 191, 0.08) !important;
+}
+
+:root[data-theme="light"] .dashboard-heatmap-card .heatmap-guide span,
+:root[data-theme="light"] .dashboard-heatmap-card .heatmap-weekdays {
+  color: var(--ink-mute) !important;
+}

@@ -453,40 +453,68 @@ function renderMonthlyBars(monthly, max) {
 }
 
 function renderHeatmap(cells) {
-  // 日曜始まりで7日ごとに週へ分割（buildHeatmap が週頭パディング済み）。
-  const weeks = [];
-  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+  const inRange = cells.filter(c => c.inRange);
+  const activeDays = inRange.filter(c => c.value > 0);
+  const totalSongs = inRange.reduce((sum, c) => sum + c.value, 0);
+  const maxDay = Math.max(0, ...inRange.map(c => c.value));
+  const first = inRange[0]?.date;
+  const last = inRange[inRange.length - 1]?.date;
+  const period = first && last ? `${fmtMonth(first)} - ${fmtMonth(last)}` : '—';
+  const months = [];
+  const monthMap = new Map();
+  for (const cell of inRange) {
+    const key = `${cell.date.getFullYear()}-${String(cell.date.getMonth() + 1).padStart(2, '0')}`;
+    if (!monthMap.has(key)) {
+      const month = { key, date: cell.date, cells: [] };
+      monthMap.set(key, month);
+      months.push(month);
+    }
+    monthMap.get(key).cells.push(cell);
+  }
 
-  // 各週の代表日（範囲内の先頭、無ければ先頭）から月を判定し、月が変わる週に月ラベルを置く。
-  const repDate = (week) => (week.find(c => c.inRange) || week[0]).date;
-  let prevMonth = -1;
-  const monthsHtml = weeks.map((week) => {
-    const m = repDate(week).getMonth();
-    const label = m !== prevMonth ? `${m + 1}月` : '';
-    prevMonth = m;
-    return `<div class="hm-month">${label}</div>`;
+  const monthCards = months.map(month => {
+    const monthSongs = month.cells.reduce((sum, c) => sum + c.value, 0);
+    const monthActive = month.cells.filter(c => c.value > 0).length;
+    const monthMax = Math.max(0, ...month.cells.map(c => c.value));
+    const weekdayHtml = ['日', '月', '火', '水', '木', '金', '土']
+      .map(day => `<span>${day}</span>`)
+      .join('');
+    const daysHtml = month.cells.map(c => `
+      <span class="heatmap-day ${heatLevel(c.value)}" title="${c.iso}: ${c.value}曲">
+        <span>${c.date.getDate()}</span>
+      </span>
+    `).join('');
+    return `
+      <section class="heatmap-month-card" aria-label="${fmtMonth(month.date)} ${monthSongs}曲 ${monthActive}日配信">
+        <div class="heatmap-month-head">
+          <span>${fmtMonth(month.date).replace(/^\d{4}\//, '')}</span>
+          <strong>${monthSongs}</strong>
+        </div>
+        <div class="heatmap-month-meta">
+          <span>歌唱曲数</span>
+          <span>${monthActive}日配信</span>
+          <span>最大${monthMax}曲/日</span>
+        </div>
+        <div class="heatmap-weekdays" aria-hidden="true">${weekdayHtml}</div>
+        <div class="heatmap-days" aria-hidden="true">${daysHtml}</div>
+      </section>
+    `;
   }).join('');
 
-  const days = ['日', '月', '火', '水', '木', '金', '土'];
-  const showLabel = new Set([1, 3, 5]); // 月, 水, 金 のみ
-  const daysHtml = days.map((d, i) => `<div class="hm-day${showLabel.has(i) ? '' : ' is-dim'}">${showLabel.has(i) ? d : ''}</div>`).join('');
-
-  const weeksHtml = weeks.map((week) => `
-    <div class="hm-week">
-      ${week.map(c => c.inRange
-        ? `<div class="heatmap-cell ${heatLevel(c.value)}" title="${c.iso}: ${c.value}曲"></div>`
-        : '<div class="heatmap-cell" style="visibility:hidden"></div>').join('')}
-    </div>`).join('');
-
   return `
-    <div class="heatmap-cal">
-      <div class="hm-corner"></div>
-      <div class="hm-months">${monthsHtml}</div>
-      <div class="hm-days">${daysHtml}</div>
-      <div class="hm-weeks">${weeksHtml}</div>
+    <div class="heatmap-guide">
+      <strong>日別の配信量を月ごとに確認</strong>
+      <span>数字は日付、色はその日に歌われた曲数です。濃い青ほど歌唱曲数が多くなります。</span>
     </div>
+    <div class="heatmap-summary">
+      <div><span>表示期間</span><strong>${period}</strong></div>
+      <div><span>配信日</span><strong>${activeDays.length}日</strong></div>
+      <div><span>歌唱曲数</span><strong>${totalSongs}曲</strong></div>
+      <div><span>最多</span><strong>${maxDay}曲/日</strong></div>
+    </div>
+    <div class="heatmap-month-grid">${monthCards}</div>
     <div class="heatmap-legend">
-      少なめ
+      <span>日ごとの歌唱曲数</span>
       <div class="scale">
         <div class="heatmap-cell"></div>
         <div class="heatmap-cell l1"></div>
@@ -494,7 +522,7 @@ function renderHeatmap(cells) {
         <div class="heatmap-cell l3"></div>
         <div class="heatmap-cell l4"></div>
       </div>
-      多め
+      <span>多いほど明るい</span>
     </div>
   `;
 }
