@@ -5955,6 +5955,24 @@ body.sidebar-collapsed .db-profile-button {
 :root[data-theme="light"] .heatmap-cell.l4,
 :root[data-theme="light"] .schedule-cell.l4 { background: #367ebf !important; }
 
+:root[data-theme="light"] .dashboard-heatmap-card .heatmap-cal {
+  border-color: rgba(54, 126, 191, 0.2) !important;
+  background:
+    linear-gradient(rgba(54, 126, 191, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(54, 126, 191, 0.035) 1px, transparent 1px),
+    rgba(255, 255, 255, 0.7) !important;
+}
+
+:root[data-theme="light"] .dashboard-heatmap-card .hm-day,
+:root[data-theme="light"] .dashboard-heatmap-card .hm-month,
+:root[data-theme="light"] .dashboard-heatmap-card .heatmap-legend {
+  color: var(--ink-mute) !important;
+}
+
+:root[data-theme="light"] .dashboard-heatmap-card .heatmap-legend {
+  border-top-color: rgba(54, 126, 191, 0.14) !important;
+}
+
 /* Modals / dialogs / menus */
 :root[data-theme="light"] .modal-backdrop {
   background: rgba(20, 40, 60, 0.28) !important;
@@ -6515,14 +6533,14 @@ body.nav-top .tab-btn span:not(.tab-icon) {
 
 /* グリッド: 最新全幅 → ジャンル + ヒートマップ横並び */
 .dashboard-overview-grid {
-  grid-template-columns: 1.65fr 1fr !important;
+  grid-template-columns: minmax(0, 1.25fr) minmax(430px, 1.15fr) !important;
   grid-template-areas: "latest latest" "genre heatmap" !important;
   gap: 20px !important;
 }
 /* 980px以下の旧ルール上書き */
 @media (max-width: 980px) and (min-width: 901px) {
   .dashboard-overview-grid {
-    grid-template-columns: 1.65fr 1fr !important;
+    grid-template-columns: minmax(0, 1.2fr) minmax(400px, 1fr) !important;
     grid-template-areas: "latest latest" "genre heatmap" !important;
   }
 }
@@ -6564,16 +6582,78 @@ body.nav-top .tab-btn span:not(.tab-icon) {
 
 /* ── ヒートマップ: 曜日グリッド表示のみ変更（月/水/金ラベルのみ） ── */
 
-/* 右カラムで横スクロール */
 .dashboard-heatmap-card .heatmap-cal {
-  overflow-x: auto !important;
+  --hm-cell: 8px;
+  --hm-gap: 2px;
+  grid-template-columns: 24px minmax(0, 1fr) !important;
+  column-gap: 8px !important;
+  row-gap: 8px !important;
+  overflow-x: hidden !important;
   overflow-y: hidden !important;
+  padding: 12px 12px 10px !important;
+  border: 1px solid rgba(95, 168, 223, 0.16) !important;
+  background:
+    linear-gradient(rgba(95, 168, 223, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(95, 168, 223, 0.028) 1px, transparent 1px),
+    rgba(9, 13, 17, 0.38) !important;
+  background-size: 20px 20px;
 }
-.dashboard-heatmap-card .heatmap-cal::-webkit-scrollbar { height: 3px; }
+.dashboard-heatmap-card .heatmap-cal::-webkit-scrollbar { height: 0; }
 .dashboard-heatmap-card .heatmap-cal::-webkit-scrollbar-track { background: transparent; }
 .dashboard-heatmap-card .heatmap-cal::-webkit-scrollbar-thumb {
   background: rgba(199,226,255,0.14);
   border-radius: 2px;
+}
+
+.dashboard-heatmap-card .hm-months,
+.dashboard-heatmap-card .hm-weeks {
+  gap: var(--hm-gap) !important;
+  width: 100% !important;
+  justify-content: space-between !important;
+}
+
+.dashboard-heatmap-card .hm-week {
+  grid-template-rows: repeat(7, var(--hm-cell)) !important;
+  gap: var(--hm-gap) !important;
+}
+
+.dashboard-heatmap-card .hm-days {
+  grid-template-rows: repeat(7, var(--hm-cell)) !important;
+  gap: var(--hm-gap) !important;
+}
+
+.dashboard-heatmap-card .hm-day {
+  height: var(--hm-cell) !important;
+  line-height: var(--hm-cell) !important;
+  font-size: 9px !important;
+  color: rgba(226, 232, 240, 0.72) !important;
+}
+
+.dashboard-heatmap-card .hm-month {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  font-size: 9px !important;
+  color: rgba(226, 232, 240, 0.68) !important;
+}
+
+.dashboard-heatmap-card .heatmap-cell {
+  width: var(--hm-cell) !important;
+  height: var(--hm-cell) !important;
+  border-radius: 2px !important;
+}
+
+.dashboard-heatmap-card .heatmap-legend {
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  margin-top: 10px !important;
+  padding-top: 8px !important;
+  border-top: 1px solid rgba(95, 168, 223, 0.12) !important;
+  color: rgba(226, 232, 240, 0.7) !important;
+}
+
+.dashboard-heatmap-card .heatmap-legend .scale .heatmap-cell {
+  width: 10px !important;
+  height: 10px !important;
 }
 
 /* 月/水/金 以外の曜日ラベルを非表示（スペースは保持） */
@@ -6584,6 +6664,10 @@ body.nav-top .tab-btn span:not(.tab-icon) {
   .dashboard-overview-grid {
     grid-template-columns: 1fr !important;
     grid-template-areas: "latest" "genre" "heatmap" !important;
+  }
+  .dashboard-heatmap-card .heatmap-cal {
+    --hm-cell: 9px;
+    overflow-x: auto !important;
   }
   .dashboard-latest-card .latest-stream-log {
     min-height: 220px !important;
