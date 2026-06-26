@@ -7110,6 +7110,7 @@ body.nav-top .tab-btn span:not(.tab-icon) {
 .dashboard-latest-card .latest-sl-info {
   display: flex !important;
   flex-direction: column !important;
+  flex: 1 !important;
   min-width: 0 !important;
 }
 
