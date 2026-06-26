@@ -499,10 +499,6 @@ function renderHeatmap(cells) {
   }).join('');
 
   return `
-    <div class="heatmap-guide">
-      <strong>月ごとの配信量をひと目で確認</strong>
-      <span>各マスは日付です。明るい青ほど、その日に歌われた曲数が多くなります。</span>
-    </div>
     <div class="heatmap-summary">
       <div><span>表示期間</span><strong>${period}</strong></div>
       <div><span>配信日</span><strong>${activeDays.length}日</strong></div>

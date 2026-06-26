@@ -6349,8 +6349,8 @@ body.sidebar-collapsed .db-profile-button {
 :root[data-theme="light"] .period-btn.active small { color: #ffffff !important; }
 /* ID-scoped dark rule (#panel-ranking ...) outranks plain classes. */
 :root[data-theme="light"] #panel-ranking .period-btn.active {
-  background: var(--primary) !important;
-  border-color: var(--primary) !important;
+  background: var(--primary-strong) !important;
+  border-color: var(--primary-strong) !important;
   color: #ffffff !important;
 }
 
@@ -6942,7 +6942,6 @@ body.nav-top .tab-btn span:not(.tab-icon) {
 .latest-stream-body p { color: #5fa0d6 !important; }
 
 /* ライトテーマでは少し濃いブルーに */
-:root[data-theme="light"] #panel-ranking .period-btn.active,
 :root[data-theme="light"] #panel-ranking .ranking-period-label,
 :root[data-theme="light"] #panel-ranking .ranking-row .rank.r1,
 :root[data-theme="light"] .ranking-summary-item small,
@@ -6952,8 +6951,8 @@ body.nav-top .tab-btn span:not(.tab-icon) {
 :root[data-theme="light"] .timeline-songcount,
 :root[data-theme="light"] .recap-tile strong,
 :root[data-theme="light"] .pl-card-count,
-:root[data-theme="light"] .latest-stream-body p { color: #367ebf !important; }
-:root[data-theme="light"] #panel-ranking .ranking-count-cell .count { color: #2668a8 !important; }
+:root[data-theme="light"] .latest-stream-body p { color: var(--primary-strong) !important; }
+:root[data-theme="light"] #panel-ranking .ranking-count-cell .count { color: var(--primary-strong) !important; }
 
 /* Final dashboard readability override: keep the activity heatmap wide and self-explanatory. */
 .dashboard-overview-grid {
