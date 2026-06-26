@@ -7115,6 +7115,7 @@ body.nav-top .tab-btn span:not(.tab-icon) {
 }
 
 .dashboard-latest-card .latest-sl-title {
+  display: block !important;
   background: none !important;
   border: none !important;
   padding: 0 !important;
