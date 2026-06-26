@@ -348,7 +348,7 @@ function renderLatestStreamLog(stream) {
           <div class="latest-setlist">
             ${songs.length ? songs.map((s, i) => {
               const titleEl = s.key
-                ? `<button class="latest-sl-title" type="button" data-songkey="${escapeHtml(s.key)}">${escapeHtml(s.title || '—')}</button>`
+                ? `<span class="latest-sl-title is-link" role="button" tabindex="0" data-songkey="${escapeHtml(s.key)}">${escapeHtml(s.title || '—')}</span>`
                 : `<span class="latest-sl-title">${escapeHtml(s.title || '—')}</span>`;
               const artistEl = s.artist
                 ? `<button class="latest-sl-artist" type="button" data-artist-search="${escapeHtml(s.artist)}">${escapeHtml(s.artist)}</button>`
