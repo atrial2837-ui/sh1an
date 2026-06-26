@@ -83,7 +83,7 @@ import{d as m,e as u}from"./chunk-AW5KTZNU.js";import{B as S,C as M,G as $,M as 
         <div class="card-title">\u6700\u65B0\u306E\u6B4C\u67A0</div>
         <div class="empty-state">\u76F4\u8FD1\u306E\u6B4C\u67A0\u306F\u307E\u3060\u3042\u308A\u307E\u305B\u3093</div>
       </div>
-    `;let a=t.url?$(t.url):"",r=(t.songs||[]).slice(0,5);return`
+    `;let a=t.url?$(t.url):"",r=(t.songs||[]).slice(0,15);return`
     <div class="card dashboard-card dashboard-latest-card">
       <div class="card-title">\u6700\u65B0\u306E\u6B4C\u67A0</div>
       <div class="latest-stream-log">

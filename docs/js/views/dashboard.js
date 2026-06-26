@@ -334,7 +334,7 @@ function renderLatestStreamLog(stream) {
     `;
   }
   const thumb = stream.url ? youtubeThumb(stream.url) : '';
-  const songs = (stream.songs || []).slice(0, 5);
+  const songs = (stream.songs || []).slice(0, 15);
   return `
     <div class="card dashboard-card dashboard-latest-card">
       <div class="card-title">最新の歌枠</div>
