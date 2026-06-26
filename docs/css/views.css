@@ -7083,8 +7083,8 @@ body.nav-top .tab-btn span:not(.tab-icon) {
 
 .dashboard-latest-card .latest-setlist {
   display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
-  gap: 6px 16px !important;
+  grid-template-columns: 1fr !important;
+  gap: 4px 0 !important;
   margin-top: 6px !important;
   padding-top: 10px !important;
 }
