@@ -6746,18 +6746,18 @@ body.nav-top .tab-btn span:not(.tab-icon) {
 
 /* ── Dashboard v3: 3パネル削除・最新歌枠全幅横並び ───────────────────── */
 
-/* グリッド: 最新全幅 → ジャンル + ヒートマップ横並び */
+/*
+ * ダッシュボード グリッド ブレークポイント設計
+ * ─────────────────────────────────────────────
+ *  ≥ 1440px  広いデスクトップ  1.8fr : 1fr
+ *  901-1439px 標準デスクトップ  1.65fr : 1fr  ← このルール（基底）
+ *  ≤ 900px   タブレット/モバイル 縦積み 1カラム
+ *  ≤ 600px   スマートフォン    最新歌枠サムネも縦積み
+ */
 .dashboard-overview-grid {
-  grid-template-columns: minmax(0, 1.25fr) minmax(430px, 1.15fr) !important;
+  grid-template-columns: 1.65fr 1fr !important;
   grid-template-areas: "latest latest" "genre heatmap" !important;
   gap: 20px !important;
-}
-/* 980px以下の旧ルール上書き */
-@media (max-width: 980px) and (min-width: 901px) {
-  .dashboard-overview-grid {
-    grid-template-columns: minmax(0, 1.2fr) minmax(400px, 1fr) !important;
-    grid-template-areas: "latest latest" "genre heatmap" !important;
-  }
 }
 
 /* グリッドエリア */
@@ -6875,19 +6875,31 @@ body.nav-top .tab-btn span:not(.tab-icon) {
 .hm-day.is-dim { visibility: hidden !important; }
 
 /* ── レスポンシブ ── */
+
+/* 広いデスクトップ (≥ 1440px): ジャンルカラムをやや広げる */
+@media (min-width: 1440px) {
+  .dashboard-overview-grid {
+    grid-template-columns: 1.8fr 1fr !important;
+  }
+}
+
+/* タブレット・モバイル (≤ 900px): 縦積み1カラム */
 @media (max-width: 900px) {
   .dashboard-overview-grid {
     grid-template-columns: 1fr !important;
     grid-template-areas: "latest" "genre" "heatmap" !important;
   }
+  /* 縦積みでは幅が確保できないためヒートマップは横スクロール */
   .dashboard-heatmap-card .heatmap-cal {
-    --hm-cell: 9px;
     overflow-x: auto !important;
   }
+  /* 横並び最新歌枠の高さ上限を緩和 */
   .dashboard-latest-card .latest-stream-log {
     min-height: 220px !important;
   }
 }
+
+/* スマートフォン (≤ 600px): 最新歌枠サムネを縦積みに切り替え */
 @media (max-width: 600px) {
   .dashboard-latest-card .latest-stream-log {
     grid-template-columns: 1fr !important;
@@ -6896,11 +6908,6 @@ body.nav-top .tab-btn span:not(.tab-icon) {
   .dashboard-latest-card .latest-stream-thumb {
     aspect-ratio: 16 / 9 !important;
     min-height: unset !important;
-  }
-}
-@media (min-width: 1440px) {
-  .dashboard-overview-grid {
-    grid-template-columns: 1.8fr 1fr !important;
   }
 }
 
@@ -7052,7 +7059,14 @@ body.nav-top .tab-btn span:not(.tab-icon) {
 }
 
 .dashboard-latest-card .latest-stream-log {
-  min-height: 220px !important;
+  grid-template-columns: minmax(280px, 44%) minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  min-height: 0 !important;
+}
+
+.dashboard-latest-card .latest-stream-thumb {
+  aspect-ratio: 16 / 9 !important;
+  min-height: 0 !important;
 }
 
 .dashboard-latest-card .latest-stream-body {
@@ -7067,15 +7081,27 @@ body.nav-top .tab-btn span:not(.tab-icon) {
 
 .dashboard-latest-card .latest-setlist {
   display: grid !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  gap: 7px 10px !important;
+  grid-template-columns: repeat(auto-fit, minmax(142px, 1fr)) !important;
+  gap: 4px 10px !important;
+  margin-top: 4px !important;
+  padding-top: 8px !important;
 }
 
 .dashboard-latest-card .latest-setlist span {
   min-width: 0;
   overflow: hidden;
+  padding: 1px 0 !important;
+  font-size: 11.5px !important;
+  line-height: 1.45 !important;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.dashboard-latest-card .latest-setlist strong {
+  display: inline-flex !important;
+  width: 2.2em !important;
+  min-width: 2.2em !important;
+  justify-content: flex-start !important;
 }
 
 .dashboard-genre-card .genre-meter {
@@ -7094,7 +7120,7 @@ body.nav-top .tab-btn span:not(.tab-icon) {
 
 @media (max-width: 760px) {
   .dashboard-latest-card .latest-setlist {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-columns: 1fr !important;
   }
 
   .dashboard-genre-card .genre-insights {

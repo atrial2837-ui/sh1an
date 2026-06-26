@@ -645,7 +645,7 @@ function _svMoveToMusicBar() {
   };
 
   if (!_svPlayer) {
-    import('./music-player.js')
+    loadMusicPlayerModule()
       .then(m => m.playMusicBarVideo?.(musicTrack, t))
       .catch(() => {});
     return;
@@ -675,7 +675,7 @@ function _svMoveToMusicBar() {
   window.addEventListener('resize', _syncMiniPos);
   _miniStartProgress();
 
-  import('./music-player.js')
+  loadMusicPlayerModule()
     .then(m => {
       m.adoptExternalPlayer?.(musicTrack, _miniPlayer, {
         restore: _svRestoreFromMusicBar,
@@ -1175,8 +1175,27 @@ window.onYouTubeIframeAPIReady = () => {
   _ytApiReady = true;
   _ytApiQueue.splice(0).forEach(fn => fn());
   // 音楽プレイヤーモジュールに YT API 準備完了を通知
-  import('./music-player.js').then(m => m.notifyYtReady()).catch(() => {});
+  if (_musicPlayerModulePromise) {
+    loadMusicPlayerModule({ init: false }).then(m => m.notifyYtReady()).catch(() => {});
+  }
 };
+
+let _musicPlayerModulePromise = null;
+
+function loadMusicPlayerModule(options = {}) {
+  const shouldInit = options.init !== false;
+  if (!_musicPlayerModulePromise) {
+    _musicPlayerModulePromise = import('./music-player.js')
+      .then(m => {
+        m.setApiLoader?.(_loadYtApi);
+        return m;
+      });
+  }
+  return _musicPlayerModulePromise.then(m => {
+    if (shouldInit) m.initMusicPlayer?.();
+    return m;
+  });
+}
 
 function _loadYtApi() {
   if (document.getElementById('yt-iframe-api-script')) return;
@@ -2636,7 +2655,9 @@ function openStreamViewer(stream, resumeAt = 0) {
   const musicHandoff = window.__takeOverMusicPlayerVideo?.(stream.url) || null;
   if (!musicHandoff) {
     // 同一動画の2プレイヤー競合で再生が壊れるのを防ぐ。
-    import('./music-player.js').then(m => (m.releaseMusicPlayerVideo || m.pauseMusicPlayer)()).catch(() => {});
+    if (_musicPlayerModulePromise) {
+      loadMusicPlayerModule({ init: false }).then(m => (m.releaseMusicPlayerVideo || m.pauseMusicPlayer)()).catch(() => {});
+    }
   }
 
   // ミニプレイヤーが表示中なら即時破棄（同一ページで2プレイヤー競合を防ぐ）
@@ -3036,7 +3057,7 @@ function updatePageTitle(mode) {
   const el = document.getElementById('page-title');
   if (!el) return;
 
-  el.innerHTML = '<img class="hero-title-icon" src="assets/site-icon.svg" alt="" width="32" height="32" fetchpriority="high" decoding="sync">sh1an 歌唱データベース';
+  el.innerHTML = '<img class="hero-title-icon" src="assets/site-icon.png" alt="" width="32" height="32" fetchpriority="high" decoding="sync">sh1an 歌唱データベース';
   document.title = 'sh1an 歌唱データベース';
 
   // ヒーロー背景ウォーターマーク切替
@@ -3346,7 +3367,6 @@ initMobileMenu();
 initMobileTabNav();
 initPageTopToast();
 initWelcomeTip();
-import('./music-player.js').then(m => { m.setApiLoader(_loadYtApi); m.initMusicPlayer(); }).catch(() => {});
 
 // グローバル検索パレット初期化
 initSearchPalette((result) => {

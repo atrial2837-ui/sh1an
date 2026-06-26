@@ -81,6 +81,10 @@ function stampAssetVersions() {
     join(__dirname, 'docs', 'css', 'theme.css'),
     join(__dirname, 'docs', 'css', 'components.css'),
     join(__dirname, 'docs', 'css', 'views.css'),
+    join(__dirname, 'docs', 'data', 'meta.json'),
+    join(__dirname, 'docs', 'data', 'songs.json'),
+    join(__dirname, 'docs', 'data', 'streams.json'),
+    join(__dirname, 'docs', 'data', 'music.json'),
   ];
   const h = createHash('sha1');
   for (const f of hashed) {

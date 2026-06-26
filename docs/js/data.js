@@ -281,7 +281,7 @@ function hydratePayload(payload) {
 }
 
 async function fetchJson(url) {
-  const res = await fetch(url, { cache: 'no-store' });
+  const res = await fetch(url, { cache: 'force-cache' });
   if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
   return res.json();
 }

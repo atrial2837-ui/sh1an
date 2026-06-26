@@ -88,7 +88,7 @@ import{d as f,e as h}from"./chunk-AW5KTZNU.js";import{B as L,C,D as $,G as k,M a
       <div class="card-title">\u6700\u65B0\u306E\u6B4C\u67A0</div>
       <div class="latest-stream-log">
         <a class="latest-stream-thumb" href="${v(a.url||"#")}" target="_blank" rel="noopener" aria-label="YouTube\u3067\u958B\u304F">
-          ${t?`<img src="${v(t)}" alt="" loading="lazy" referrerpolicy="no-referrer">`:""}
+          ${t?`<img src="${v(t)}" alt="" width="1280" height="720" loading="eager" fetchpriority="high" decoding="async" referrerpolicy="no-referrer">`:""}
         </a>
         <div class="latest-stream-body">
           <h3>${v(a.title||"\u914D\u4FE1")}</h3>

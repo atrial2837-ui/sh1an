@@ -340,7 +340,7 @@ function renderLatestStreamLog(stream) {
       <div class="card-title">最新の歌枠</div>
       <div class="latest-stream-log">
         <a class="latest-stream-thumb" href="${escapeHtml(stream.url || '#')}" target="_blank" rel="noopener" aria-label="YouTubeで開く">
-          ${thumb ? `<img src="${escapeHtml(thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}
+          ${thumb ? `<img src="${escapeHtml(thumb)}" alt="" width="1280" height="720" loading="eager" fetchpriority="high" decoding="async" referrerpolicy="no-referrer">` : ''}
         </a>
         <div class="latest-stream-body">
           <h3>${escapeHtml(stream.title || '配信')}</h3>

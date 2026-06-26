@@ -18,12 +18,6 @@
       "type": "image/png",
       "src": "assets/icons/icon-maskable-512.png",
       "sizes": "512x512"
-    },
-    {
-      "purpose": "any",
-      "type": "image/svg+xml",
-      "src": "assets/site-icon.svg",
-      "sizes": "any"
     }
   ],
   "description": "sh1anさんの歌った曲リスト、ランキング、歌枠タイムライン",
