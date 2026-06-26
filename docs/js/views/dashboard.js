@@ -476,14 +476,13 @@ function renderHeatmap(cells) {
     const monthSongs = month.cells.reduce((sum, c) => sum + c.value, 0);
     const monthActive = month.cells.filter(c => c.value > 0).length;
     const monthMax = Math.max(0, ...month.cells.map(c => c.value));
-    const weekdayHtml = ['日', '月', '火', '水', '木', '金', '土']
-      .map(day => `<span>${day}</span>`)
-      .join('');
-    const daysHtml = month.cells.map(c => `
+    const days = [...month.cells];
+    while (days.length < 31) days.push(null);
+    const daysHtml = days.map(c => c ? `
       <span class="heatmap-day ${heatLevel(c.value)}" title="${c.iso}: ${c.value}曲">
         <span>${c.date.getDate()}</span>
       </span>
-    `).join('');
+    ` : '<span class="heatmap-day is-empty" aria-hidden="true"></span>').join('');
     return `
       <section class="heatmap-month-card" aria-label="${fmtMonth(month.date)} ${monthSongs}曲 ${monthActive}日配信">
         <div class="heatmap-month-head">
@@ -491,11 +490,9 @@ function renderHeatmap(cells) {
           <strong>${monthSongs}</strong>
         </div>
         <div class="heatmap-month-meta">
-          <span>歌唱曲数</span>
-          <span>${monthActive}日配信</span>
-          <span>最大${monthMax}曲/日</span>
+          <span>配信 ${monthActive}日</span>
+          <span>最多 ${monthMax}曲/日</span>
         </div>
-        <div class="heatmap-weekdays" aria-hidden="true">${weekdayHtml}</div>
         <div class="heatmap-days" aria-hidden="true">${daysHtml}</div>
       </section>
     `;
@@ -503,8 +500,8 @@ function renderHeatmap(cells) {
 
   return `
     <div class="heatmap-guide">
-      <strong>日別の配信量を月ごとに確認</strong>
-      <span>数字は日付、色はその日に歌われた曲数です。濃い青ほど歌唱曲数が多くなります。</span>
+      <strong>月ごとの配信量をひと目で確認</strong>
+      <span>各マスは日付です。明るい青ほど、その日に歌われた曲数が多くなります。</span>
     </div>
     <div class="heatmap-summary">
       <div><span>表示期間</span><strong>${period}</strong></div>

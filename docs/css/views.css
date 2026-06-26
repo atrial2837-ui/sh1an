@@ -6987,28 +6987,33 @@ body.nav-top .tab-btn span:not(.tab-icon) {
 }
 
 .dashboard-heatmap-card .heatmap-month-grid {
-  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)) !important;
-  align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)) !important;
+  align-items: stretch;
+  gap: 7px !important;
 }
 
 .dashboard-heatmap-card .heatmap-month-card {
-  padding: 11px !important;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  min-height: 116px;
+  padding: 8px !important;
 }
 
-.dashboard-heatmap-card .heatmap-weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 3px;
-  margin: 0 0 4px;
-  color: rgba(226, 232, 240, 0.46);
-  font-size: 8px;
-  line-height: 1;
-  text-align: center;
+.dashboard-heatmap-card .heatmap-month-head {
+  margin-bottom: 5px !important;
+}
+
+.dashboard-heatmap-card .heatmap-month-head span {
+  font-size: 12px !important;
+}
+
+.dashboard-heatmap-card .heatmap-month-head strong {
+  font-size: 15px !important;
 }
 
 .dashboard-heatmap-card .heatmap-month-meta {
   display: grid !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   gap: 4px !important;
   margin-bottom: 7px !important;
 }
@@ -7016,12 +7021,25 @@ body.nav-top .tab-btn span:not(.tab-icon) {
 .dashboard-heatmap-card .heatmap-month-meta span {
   overflow: hidden;
   padding: 3px 4px !important;
+  font-size: 8px !important;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.dashboard-heatmap-card .heatmap-days {
+  align-content: start;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  grid-auto-rows: 1fr;
+  gap: 2px !important;
+}
+
 .dashboard-heatmap-card .heatmap-day {
-  font-size: 8px !important;
+  min-height: 10px;
+  font-size: 6px !important;
+}
+
+.dashboard-heatmap-card .heatmap-day.is-empty {
+  visibility: hidden;
 }
 
 :root[data-theme="light"] .dashboard-heatmap-card .heatmap-guide {
@@ -7029,7 +7047,57 @@ body.nav-top .tab-btn span:not(.tab-icon) {
   background: rgba(54, 126, 191, 0.08) !important;
 }
 
-:root[data-theme="light"] .dashboard-heatmap-card .heatmap-guide span,
-:root[data-theme="light"] .dashboard-heatmap-card .heatmap-weekdays {
+:root[data-theme="light"] .dashboard-heatmap-card .heatmap-guide span {
   color: var(--ink-mute) !important;
+}
+
+.dashboard-latest-card .latest-stream-log {
+  min-height: 220px !important;
+}
+
+.dashboard-latest-card .latest-stream-body {
+  gap: 8px !important;
+  padding: 16px 18px 14px !important;
+}
+
+.dashboard-latest-card .latest-stream-body h3 {
+  font-size: clamp(15px, 1.15vw, 19px) !important;
+  line-height: 1.35 !important;
+}
+
+.dashboard-latest-card .latest-setlist {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 7px 10px !important;
+}
+
+.dashboard-latest-card .latest-setlist span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-genre-card .genre-meter {
+  gap: 10px !important;
+}
+
+.dashboard-genre-card .genre-breakdown {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
+  gap: 8px 16px !important;
+}
+
+.dashboard-genre-card .genre-insights {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+@media (max-width: 760px) {
+  .dashboard-latest-card .latest-setlist {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .dashboard-genre-card .genre-insights {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
 }
