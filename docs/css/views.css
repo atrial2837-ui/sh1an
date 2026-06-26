@@ -7122,11 +7122,10 @@ body.nav-top .tab-btn span:not(.tab-icon) {
   color: #c7e2ff !important;
   text-align: left !important;
   cursor: pointer !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
+  white-space: normal !important;
   line-height: 1.4 !important;
   width: 100% !important;
+  word-break: break-word !important;
 }
 
 .dashboard-latest-card .latest-sl-title:hover {
