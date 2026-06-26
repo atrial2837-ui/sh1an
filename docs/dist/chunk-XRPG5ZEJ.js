@@ -1,4 +1,4 @@
-import{d as b}from"./chunk-RKZOC53G.js";import{e as c}from"./chunk-AW5KTZNU.js";import{F as S,P as D,a as y,c as p,g as w}from"./chunk-4S6OL3GJ.js";function v(){let{songs:t,streams:r=[]}=c.data,a=c.rankingPeriod||"all",l=y("#panel-ranking");if(!l)return;let e=a==="all"?null:T(r,a),o=e?E(t,e):[...t].sort((s,i)=>i.count-s.count||s.title.localeCompare(i.title,"ja")),n=c.rankingLimit,d=o.slice(0,n),u=!!c.channelData?.fullLoaded;l.innerHTML=`
+import{d as b}from"./chunk-RKZOC53G.js";import{e as c}from"./chunk-AW5KTZNU.js";import{C as S,M as D,a as y,c as p,g as w}from"./chunk-3BNHFXWM.js";function v(){let{songs:t,streams:r=[]}=c.data,a=c.rankingPeriod||"all",l=y("#panel-ranking");if(!l)return;let e=a==="all"?null:T(r,a),o=e?E(t,e):[...t].sort((s,i)=>i.count-s.count||s.title.localeCompare(i.title,"ja")),n=c.rankingLimit,d=o.slice(0,n),u=!!c.channelData?.fullLoaded;l.innerHTML=`
     <div class="section-header">
       <h2>${D("rank")} Ranking Board</h2>
       <span class="count-pill">${t.length}\u66F2\u4E2D</span>

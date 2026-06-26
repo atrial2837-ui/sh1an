@@ -1,4 +1,4 @@
-import{c as p,d as g,g as v}from"./chunk-SULOJOV5.js";import{e as h}from"./chunk-RKZOC53G.js";import{e as f}from"./chunk-AW5KTZNU.js";import{F as d,G as w,P as l,a as c,c as e,e as b,i as $,o as k}from"./chunk-4S6OL3GJ.js";function z(){let{songs:s,streams:a,artists:t}=f.data,n=c("#panel-analytics");n.innerHTML=`
+import{c as p,d as g,g as v}from"./chunk-5MMGVMBB.js";import{e as h}from"./chunk-RKZOC53G.js";import{e as f}from"./chunk-AW5KTZNU.js";import{C as d,D as w,M as l,a as c,c as e,e as b,i as $,o as k}from"./chunk-3BNHFXWM.js";function z(){let{songs:s,streams:a,artists:t}=f.data,n=c("#panel-analytics");n.innerHTML=`
     <div class="section-header">
       <h2>${l("analytics")} \u30A2\u30CA\u30EA\u30C6\u30A3\u30AF\u30B9</h2>
       <span class="count-pill">${a.length}\u67A0 \xD7 ${s.length}\u66F2\u3092\u5206\u6790</span>

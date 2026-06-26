@@ -1,70 +1,23 @@
 import { state } from '../store.js';
 import { $, escapeHtml, fmtDate, fmtMonth, daysSince, youtubeThumb } from '../utils.js';
-import { periodHits, countStreamsThisMonth, countSongsThisMonth, countNewSongsThisMonth, buildHeatmap, heatLevel, isoDate } from '../domain-compat.js';
+import { periodHits, buildHeatmap, heatLevel } from '../domain-compat.js';
 import { getToday } from '../store.js';
 import { icon } from '../icons.js';
 
 export function renderDashboard() {
   const { songs, streams } = state.data;
-  const sorted = [...songs].sort((a, b) => b.count - a.count);
-  const top5 = sorted.slice(0, 5);
-  const top5Max = top5[0]?.count || 1;
   const recent = streams.slice(0, 5);
   const today = getToday();
-  const newSongs = countNewSongsThisMonth(songs, today);
   const panel = $('#panel-dashboard');
   const heatmap = buildHeatmap(streams, today);
-
-  const activityHtml = `
-    <div class="card dashboard-card dashboard-activity-card">
-      <div class="card-title">今月の活動</div>
-      <div class="dashboard-metric-list">
-        <div class="activity-row">
-          <span class="a-date">配信</span>
-          <span class="a-meta">歌枠数</span>
-          <strong>${countStreamsThisMonth(streams, today)}回</strong>
-        </div>
-        <div class="activity-row">
-          <span class="a-date">歌唱</span>
-          <span class="a-meta">総歌唱数</span>
-          <strong>${countSongsThisMonth(streams, today)}曲</strong>
-        </div>
-        <div class="activity-row">
-          <span class="a-date">新曲</span>
-          <span class="a-meta">初披露</span>
-          <strong>${newSongs}曲</strong>
-        </div>
-        <div class="activity-row">
-          <span class="a-date">最終</span>
-          <span class="a-meta">最新歌枠から</span>
-          <strong>${streams[0] ? `${daysSince(streams[0].date)}日前` : '—'}</strong>
-        </div>
-      </div>
-    </div>
-  `;
-
-  const top5Html = `
-    <div class="card dashboard-card dashboard-top-card">
-      <div class="card-title">TOP 5 楽曲</div>
-      <div class="bar-list">
-        ${top5.length ? top5.map((s, i) => topBarRow(s, i, top5Max)).join('') : '<div class="empty-state">曲データなし</div>'}
-      </div>
-    </div>
-  `;
 
   panel.innerHTML = `
     <div class="dashboard-grid" id="dashboard-grid">
       <div class="dashboard-overview-grid">
-        ${activityHtml}
         ${renderLatestStreamLog(streams[0])}
-        ${top5Html}
         <div class="card dashboard-card dashboard-genre-card">
           <div class="card-title">ジャンル分布</div>
           ${renderGenreChart(songs)}
-        </div>
-        <div class="card dashboard-card dashboard-schedule-card">
-          <div class="card-title">曜日分布</div>
-          ${renderScheduleDensity(streams)}
         </div>
         <div class="card dashboard-card dashboard-heatmap-card">
           <div class="card-title">配信ヒートマップ</div>
@@ -515,7 +468,8 @@ function renderHeatmap(cells) {
   }).join('');
 
   const days = ['日', '月', '火', '水', '木', '金', '土'];
-  const daysHtml = days.map((d, i) => `<div class="hm-day${i % 2 ? ' is-dim' : ''}">${d}</div>`).join('');
+  const showLabel = new Set([1, 3, 5]); // 月, 水, 金 のみ
+  const daysHtml = days.map((d, i) => `<div class="hm-day${showLabel.has(i) ? '' : ' is-dim'}">${showLabel.has(i) ? d : ''}</div>`).join('');
 
   const weeksHtml = weeks.map((week) => `
     <div class="hm-week">
