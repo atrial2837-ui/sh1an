@@ -6519,6 +6519,11 @@ body.sidebar-collapsed .db-profile-button {
 :root[data-theme="light"] .latest-setlist { border-top-color: var(--lt-line-soft) !important; }
 :root[data-theme="light"] .latest-setlist span { color: var(--ink-soft) !important; }
 :root[data-theme="light"] .latest-setlist strong { color: var(--primary-strong) !important; }
+:root[data-theme="light"] .dashboard-latest-card .latest-sl-num { color: var(--primary) !important; }
+:root[data-theme="light"] .dashboard-latest-card .latest-sl-title { color: var(--ink) !important; }
+:root[data-theme="light"] .dashboard-latest-card .latest-sl-title:hover { color: var(--primary-strong) !important; }
+:root[data-theme="light"] .dashboard-latest-card .latest-sl-artist { color: var(--ink-mute) !important; }
+:root[data-theme="light"] .dashboard-latest-card .latest-sl-artist:hover { color: var(--primary-strong) !important; }
 
 /* --- Playlist / MV cards (歌枠一覧 / 歌みた・オリ曲 / マイリスト). --- */
 :root[data-theme="light"] .pl-card,
@@ -7078,27 +7083,77 @@ body.nav-top .tab-btn span:not(.tab-icon) {
 
 .dashboard-latest-card .latest-setlist {
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(142px, 1fr)) !important;
-  gap: 4px 10px !important;
-  margin-top: 4px !important;
-  padding-top: 8px !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 6px 16px !important;
+  margin-top: 6px !important;
+  padding-top: 10px !important;
 }
 
-.dashboard-latest-card .latest-setlist span {
-  min-width: 0;
-  overflow: hidden;
-  padding: 1px 0 !important;
-  font-size: 11.5px !important;
-  line-height: 1.45 !important;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.dashboard-latest-card .latest-setlist-item {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 7px !important;
+  min-width: 0 !important;
 }
 
-.dashboard-latest-card .latest-setlist strong {
-  display: inline-flex !important;
-  width: 2.2em !important;
-  min-width: 2.2em !important;
-  justify-content: flex-start !important;
+.dashboard-latest-card .latest-sl-num {
+  flex: 0 0 auto !important;
+  width: 1.6em !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: #5fa0d6 !important;
+  font-family: "Space Grotesk", system-ui, sans-serif !important;
+  text-align: right !important;
+  line-height: 1.7 !important;
+}
+
+.dashboard-latest-card .latest-sl-info {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+}
+
+.dashboard-latest-card .latest-sl-title {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #c7e2ff !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  line-height: 1.4 !important;
+  width: 100% !important;
+}
+
+.dashboard-latest-card .latest-sl-title:hover {
+  color: #7ec8e8 !important;
+  text-decoration: underline !important;
+  text-underline-offset: 2px !important;
+}
+
+.dashboard-latest-card .latest-sl-artist {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  font-size: 11px !important;
+  color: #7a9ab5 !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  line-height: 1.3 !important;
+  width: 100% !important;
+}
+
+.dashboard-latest-card .latest-sl-artist:hover {
+  color: #9bbdd4 !important;
+  text-decoration: underline !important;
+  text-underline-offset: 2px !important;
 }
 
 .dashboard-genre-card .genre-meter {

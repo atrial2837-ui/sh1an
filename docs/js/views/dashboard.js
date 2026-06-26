@@ -346,9 +346,15 @@ function renderLatestStreamLog(stream) {
           <h3>${escapeHtml(stream.title || '配信')}</h3>
           <p>${icon('mic')} ${(stream.songs || []).length}曲 ・ ${daysSince(stream.date)}日前</p>
           <div class="latest-setlist">
-            ${songs.length ? songs.map((s, i) => `
-              <span><strong>${i + 1}</strong>${escapeHtml(s.title || '—')}</span>
-            `).join('') : '<span>セットリスト未登録</span>'}
+            ${songs.length ? songs.map((s, i) => {
+              const titleEl = s.key
+                ? `<button class="latest-sl-title" type="button" data-songkey="${escapeHtml(s.key)}">${escapeHtml(s.title || '—')}</button>`
+                : `<span class="latest-sl-title">${escapeHtml(s.title || '—')}</span>`;
+              const artistEl = s.artist
+                ? `<button class="latest-sl-artist" type="button" data-artist-search="${escapeHtml(s.artist)}">${escapeHtml(s.artist)}</button>`
+                : '';
+              return `<div class="latest-setlist-item"><strong class="latest-sl-num">${i + 1}</strong><div class="latest-sl-info">${titleEl}${artistEl}</div></div>`;
+            }).join('') : '<span>セットリスト未登録</span>'}
           </div>
         </div>
       </div>
