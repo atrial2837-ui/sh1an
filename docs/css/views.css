@@ -6336,8 +6336,6 @@ body.sidebar-collapsed .db-profile-button {
 
 :root[data-theme="light"] .ranking-summary span,
 :root[data-theme="light"] .ranking-summary small,
-:root[data-theme="light"] .ranking-table-head span,
-:root[data-theme="light"] .ranking-table-head small,
 :root[data-theme="light"] .timeline-tools span,
 :root[data-theme="light"] .timeline-tools small { color: var(--ink-mute) !important; }
 
