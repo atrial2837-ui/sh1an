@@ -33,6 +33,50 @@ tools/generate_static_data.mjs
 
 `wrangler.toml` の `database_id` は、作成した D1 database ID に置き換えてください。
 
+## ローカル開発
+
+### クイックスタート（静的サイトのみ）
+
+ローカルで静的フロントエンド（API 不可）をすぐ見たい場合:
+
+```powershell
+cd docs
+python -m http.server 8000
+```
+
+ブラウザで `http://localhost:8000` を開きます。ただし `/api/*` エンドポイントと OGP meta 書き換えは動作しません。
+
+### フルスタック（Functions + ローカル D1）
+
+Pages Functions と D1 バインディングを含めた完全なローカル環境:
+
+```powershell
+# 1. 依存関係のインストール
+npm install
+
+# 2. 環境変数テンプレートをコピー（必須ではありませんが推奨）
+cp .dev.vars.example .dev.vars
+# .dev.vars を編集（ADMIN_TOKEN など必要に応じて）
+
+# 3. ローカル D1 にスキーマとデータを投入
+npm run db:local
+
+# 4. Pages Functions + ローカル D1 で起動
+npm run dev
+```
+
+wrangler が表示するローカルURL（通常 `http://localhost:8787`）でアクセスできます。
+
+**ローカル D1 の特性:**
+- `.wrangler/state/v3/d1/miniflare-D1DatabaseObject/` 配下の SQLite ファイルに永続化されます（ファイル名はハッシュ値、wrangler/miniflare が管理）
+- `npm run db:local` 実行時に schema.sql → migrations → import_data.sql の順で適用されます
+- `npm run dev` 実行時の `pages dev` と同じストレージを使うため、データはそのまま読めます
+- `wrangler pages dev` を終了後、`.wrangler/state/v3/d1/` 削除でリセット可能です（`npm run db:local` で再投入）
+
+**環境変数:**
+- 必須: なし
+- オプション: `.dev.vars.example` を参照し、`ADMIN_TOKEN` など設定してください
+
 ## Cloudflare Pages 環境変数
 
 管理画面から GitHub Actions を起動する場合:
