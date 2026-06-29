@@ -253,7 +253,7 @@ function initManagement() {
     $('#stream-status').textContent = '登録中...';
     try {
       const data = await adminApi('streams', streamFormData());
-      $('#stream-status').textContent = `登録しました: stream_id=${data.streamId}, ${data.songCount}曲。必要なら静的データ生成を開始してください。`;
+      $('#stream-status').textContent = `登録しました: stream_id=${data.streamId}, ${data.count}曲。必要なら静的データ生成を開始してください。`;
       $('#preview-box').innerHTML = '';
       loadStatus();
     } catch (error) {
