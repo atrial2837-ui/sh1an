@@ -189,15 +189,21 @@ textarea {
   padding-top: 14px;
   border-top: 1px dashed var(--border);
 }
-.dashboard-activity-card { grid-area: activity; }
+/* 右列カードは自然な高さに保ち、内部余白をなくす */
+.dashboard-activity-card { grid-area: activity; align-self: start; height: auto !important; }
 .dashboard-top-card { grid-area: top; }
-.dashboard-latest-card { grid-area: latest; }
+.dashboard-latest-card {
+  grid-area: latest;
+  display: flex;
+  flex-direction: column;
+}
 
-/* 最新の歌枠: サムネ横長（上）→ タイトル/情報 → セットリスト の縦積みレイアウト */
+/* 最新の歌枠: サムネ16:9（上）→ タイトル/情報 → セットリスト の縦積みレイアウト */
 .dashboard-latest-card .latest-stream-log {
   display: flex;
   flex-direction: column;
-  min-height: auto;
+  flex: 1;
+  min-height: 0;
 }
 .dashboard-latest-card .latest-stream-thumb {
   flex: 0 0 auto;
@@ -221,6 +227,8 @@ textarea {
   grid-area: genre;
   display: flex;
   flex-direction: column;
+  align-self: start;
+  height: auto !important;
 }
 .dashboard-genre-card .chart-wrap {
   flex: 1;
