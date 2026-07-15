@@ -23,6 +23,10 @@ import { listTimestampSubmissions } from '../../usecase/timestamp/list-timestamp
 import { reviewTimestamp } from '../../usecase/timestamp/review-timestamp.js';
 import { createApprovedTimestamp } from '../../usecase/timestamp/create-approved-timestamp.js';
 import { updateTimestampTime } from '../../usecase/timestamp/update-timestamp-time.js';
+import { getStreamSongs } from '../../usecase/get-stream-songs.js';
+import { addSongToStream } from '../../usecase/add-song-to-stream.js';
+import { removeStreamSong } from '../../usecase/remove-stream-song.js';
+import { updateStreamSong } from '../../usecase/update-stream-song.js';
 
 /**
  * @typedef {import('./router.js').RouteContext} RouteContext
@@ -125,6 +129,37 @@ export function buildAdminRouter(options) {
   }));
 
   router.post(p('/static-data/generate'), auth(staticDataHandler));
+
+  // ─── セトリ管理 ──────────────────────────────────────────────────────────
+
+  router.get(p('/streams/songs'), auth(async (ctx) => {
+    const deps = getDeps(ctx);
+    const channelCode = ctx.query.get('channel') || '';
+    const sourceIndex = Number(ctx.query.get('index')) || 0;
+    const result = await getStreamSongs(deps, { channelCode, sourceIndex });
+    return jsonResponse(result);
+  }));
+
+  router.post(p('/streams/songs'), auth(async (ctx) => {
+    const body = (await readJsonBody(ctx.request)) || {};
+    const result = await addSongToStream(getDeps(ctx), body);
+    return jsonResponse({ ok: true, ...result }, 201);
+  }));
+
+  router.patch(/^(?:.*\/)?streams\/songs\/(\d+)$/, auth(async (ctx) => {
+    const m = new URL(ctx.request.url).pathname.match(/\/streams\/songs\/(\d+)$/);
+    const id = Number(m[1]);
+    const body = (await readJsonBody(ctx.request)) || {};
+    await updateStreamSong(getDeps(ctx), { id, ...body });
+    return jsonResponse({ ok: true });
+  }));
+
+  router.delete(/^(?:.*\/)?streams\/songs\/(\d+)$/, auth(async (ctx) => {
+    const m = new URL(ctx.request.url).pathname.match(/\/streams\/songs\/(\d+)$/);
+    const id = Number(m[1]);
+    await removeStreamSong(getDeps(ctx), { id });
+    return jsonResponse({ ok: true });
+  }));
 
   // ─── コミュニティタイムスタンプ管理 ──────────────────────────────────────
 

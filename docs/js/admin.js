@@ -67,6 +67,20 @@ async function adminApi(path, body) {
   return data;
 }
 
+async function adminFetch(method, path, body) {
+  const res = await fetch(`/api/admin/${path}`, {
+    method,
+    headers: {
+      'content-type': 'application/json',
+      'x-admin-token': adminToken?.value || '',
+    },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
 function streamFormData() {
   return {
     channelCode: $('#channel').value,
@@ -163,19 +177,16 @@ function renderQuality(data) {
 }
 
 function loadChannels() {
-  const channelSelect = $('#channel');
-  const editChannelSelect = $('#edit-channel');
   const channels = Object.values(CHANNELS);
+  const defaultVal = CHANNELS[DEFAULT_CHANNEL] ? DEFAULT_CHANNEL : channels[0]?.id || '';
   const html = channels.map((channel) => (
     `<option value="${escapeHtml(channel.id)}">${escapeHtml(channel.label)}</option>`
   )).join('');
-  if (channelSelect) {
-    channelSelect.innerHTML = html;
-    channelSelect.value = CHANNELS[DEFAULT_CHANNEL] ? DEFAULT_CHANNEL : channels[0]?.id || '';
-  }
-  if (editChannelSelect) {
-    editChannelSelect.innerHTML = html;
-    editChannelSelect.value = CHANNELS[DEFAULT_CHANNEL] ? DEFAULT_CHANNEL : channels[0]?.id || '';
+  for (const id of ['#channel', '#edit-channel', '#setlist-channel']) {
+    const el = $(id);
+    if (!el) continue;
+    el.innerHTML = html;
+    el.value = defaultVal;
   }
 }
 
@@ -723,6 +734,160 @@ function initMusicVideos() {
   });
 }
 
+/* ─── セトリ編集 ─────────────────────────────────────────────────────────── */
+
+let _setlistChannel = null;
+let _setlistIndex   = null;
+
+function renderSetlist(songs) {
+  const box   = $('#setlist-box');
+  const badge = $('#setlist-badge');
+  if (badge) badge.textContent = `${songs.length}曲`;
+  if (!songs.length) {
+    box.innerHTML = '<p class="admin-note">セトリは登録されていません</p>';
+    return;
+  }
+  box.innerHTML = `
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead><tr><th>#</th><th>曲名</th><th>アーティスト</th><th></th></tr></thead>
+        <tbody>
+          ${songs.map(s => `
+            <tr data-ss-id="${s.id}">
+              <td>${s.position}</td>
+              <td><span class="ss-title">${escapeHtml(s.title_snapshot || '')}</span></td>
+              <td><span class="ss-artist">${escapeHtml(s.artist_snapshot || '')}</span></td>
+              <td style="white-space:nowrap">
+                <button class="btn ghost" data-ss-edit="${s.id}" type="button" style="margin-right:4px">編集</button>
+                <button class="btn ghost" data-ss-del="${s.id}"  type="button">削除</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+async function loadSetlist() {
+  const channelCode = $('#setlist-channel')?.value;
+  const sourceIndex = $('#setlist-index')?.value;
+  if (!channelCode || !sourceIndex) {
+    $('#setlist-status').textContent = 'チャンネルと枠番号を入力してください';
+    return;
+  }
+  $('#setlist-status').textContent = '読み込み中…';
+  try {
+    const data = await adminApi(`streams/songs?channel=${encodeURIComponent(channelCode)}&index=${encodeURIComponent(sourceIndex)}`);
+    _setlistChannel = channelCode;
+    _setlistIndex   = sourceIndex;
+    const title = data.stream?.title ? `「${data.stream.title}」` : `第${sourceIndex}枠`;
+    $('#setlist-status').textContent = `${title} 読み込み完了`;
+    $('#setlist-badge').textContent = `${(data.songs || []).length}曲`;
+    $('#setlist-add-form').style.display = '';
+    renderSetlist(data.songs || []);
+  } catch (err) {
+    $('#setlist-status').textContent = `エラー: ${err.message || err}`;
+    $('#setlist-add-form').style.display = 'none';
+  }
+}
+
+function initSetlistEditor() {
+  $('#setlist-load')?.addEventListener('click', loadSetlist);
+
+  $('#setlist-box')?.addEventListener('click', async (e) => {
+    const editBtn = e.target.closest('[data-ss-edit]');
+    const delBtn  = e.target.closest('[data-ss-del]');
+
+    if (editBtn) {
+      const id  = editBtn.dataset.ssEdit;
+      const row = document.querySelector(`[data-ss-id="${id}"]`);
+      if (!row) return;
+      const curTitle  = row.querySelector('.ss-title')?.textContent  || '';
+      const curArtist = row.querySelector('.ss-artist')?.textContent || '';
+      const posCell   = row.cells[0].textContent;
+      const origHtml  = row.innerHTML;
+
+      row.innerHTML = `
+        <td>${posCell}</td>
+        <td><input class="admin-compact-input" id="ss-edit-title"  value="${escapeHtml(curTitle)}"></td>
+        <td><input class="admin-compact-input" id="ss-edit-artist" value="${escapeHtml(curArtist)}"></td>
+        <td style="white-space:nowrap">
+          <button class="btn primary" data-ss-save="${id}" type="button" style="margin-right:4px">保存</button>
+          <button class="btn ghost"   data-ss-cancel      type="button">キャンセル</button>
+        </td>`;
+
+      row.querySelector('[data-ss-cancel]')?.addEventListener('click', () => {
+        row.innerHTML = origHtml;
+      });
+
+      row.querySelector(`[data-ss-save]`)?.addEventListener('click', async () => {
+        const newTitle  = row.querySelector('#ss-edit-title')?.value.trim()  || '';
+        const newArtist = row.querySelector('#ss-edit-artist')?.value.trim() || '';
+        $('#setlist-status').textContent = '保存中…';
+        try {
+          await adminFetch('PATCH', `streams/songs/${id}`, { title: newTitle, artist: newArtist });
+          $('#setlist-status').textContent = '保存しました。必要なら静的データ生成を開始してください。';
+          await loadSetlist();
+        } catch (err) {
+          $('#setlist-status').textContent = `エラー: ${err.message || err}`;
+        }
+      });
+    }
+
+    if (delBtn) {
+      const id = delBtn.dataset.ssDel;
+      if (!confirm('この曲をセトリから削除しますか？')) return;
+      $('#setlist-status').textContent = '削除中…';
+      try {
+        await adminFetch('DELETE', `streams/songs/${id}`);
+        $('#setlist-status').textContent = '削除しました。必要なら静的データ生成を開始してください。';
+        await loadSetlist();
+      } catch (err) {
+        $('#setlist-status').textContent = `エラー: ${err.message || err}`;
+      }
+    }
+  });
+
+  $('#setlist-add-btn')?.addEventListener('click', async () => {
+    if (!_setlistChannel || !_setlistIndex) return;
+    const title  = $('#setlist-add-title')?.value.trim();
+    const artist = $('#setlist-add-artist')?.value.trim() || '';
+    if (!title) { $('#setlist-status').textContent = '曲名を入力してください'; return; }
+    $('#setlist-status').textContent = '追加中…';
+    try {
+      await adminApi('streams/songs', { channelCode: _setlistChannel, sourceIndex: _setlistIndex, title, artist });
+      $('#setlist-status').textContent = '追加しました。必要なら静的データ生成を開始してください。';
+      $('#setlist-add-title').value  = '';
+      $('#setlist-add-artist').value = '';
+      await loadSetlist();
+    } catch (err) {
+      $('#setlist-status').textContent = `エラー: ${err.message || err}`;
+    }
+  });
+
+  $('#setlist-bulk-btn')?.addEventListener('click', async () => {
+    if (!_setlistChannel || !_setlistIndex) return;
+    const text  = $('#setlist-bulk-text')?.value.trim();
+    if (!text) { $('#setlist-status').textContent = '曲リストを入力してください'; return; }
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    if (!confirm(`${lines.length}曲を一括追加しますか？`)) return;
+    let ok = 0;
+    for (let i = 0; i < lines.length; i++) {
+      $('#setlist-status').textContent = `一括追加中… ${i}/${lines.length}`;
+      const parts  = lines[i].split('/');
+      const title  = parts[0].trim();
+      const artist = parts[1]?.trim() || '';
+      if (!title) continue;
+      try {
+        await adminApi('streams/songs', { channelCode: _setlistChannel, sourceIndex: _setlistIndex, title, artist });
+        ok++;
+      } catch (_) {}
+    }
+    $('#setlist-status').textContent = `${ok}曲を追加しました。必要なら静的データ生成を開始してください。`;
+    $('#setlist-bulk-text').value = '';
+    await loadSetlist();
+  });
+}
+
 /* ─── 起動 ───────────────────────────────────────────────────────────────── */
 
 $('#refresh-status').addEventListener('click', loadStatus);
@@ -731,3 +896,4 @@ loadStatus();
 initTimestamps();
 initTimestampRegister();
 initMusicVideos();
+initSetlistEditor();

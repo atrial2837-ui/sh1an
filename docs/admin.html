@@ -82,6 +82,40 @@
 
   <section class="admin-panel">
     <div class="section-header">
+      <h2>セトリ編集</h2>
+      <span class="badge" id="setlist-badge">—</span>
+    </div>
+    <p class="admin-note">登録済み歌枠のセトリを曲単位で追加・編集・削除できます。</p>
+    <div class="admin-form-grid">
+      <label>チャンネル<select id="setlist-channel"></select></label>
+      <label>枠番号<input id="setlist-index" type="number" min="1" placeholder="例: 173"></label>
+    </div>
+    <div class="admin-actions">
+      <button class="btn ghost" id="setlist-load" type="button">読み込み</button>
+    </div>
+    <p class="admin-note" id="setlist-status"></p>
+    <div id="setlist-box"></div>
+    <div id="setlist-add-form" style="display:none">
+      <hr style="margin:16px 0;border:none;border-top:1px solid var(--border)">
+      <h3 style="font-size:14px;font-weight:600;margin-bottom:8px">1曲追加</h3>
+      <div class="admin-form-grid">
+        <label>曲名<input id="setlist-add-title" type="text" placeholder="曲名"></label>
+        <label>アーティスト<input id="setlist-add-artist" type="text" placeholder="省略可"></label>
+      </div>
+      <div class="admin-actions">
+        <button class="btn primary" id="setlist-add-btn" type="button">追加</button>
+      </div>
+      <hr style="margin:16px 0;border:none;border-top:1px solid var(--border)">
+      <h3 style="font-size:14px;font-weight:600;margin-bottom:8px">複数追加（改行区切り）</h3>
+      <label class="admin-field-full">曲リスト（「曲名 / アーティスト」形式）<textarea id="setlist-bulk-text" placeholder="曲名 / アーティスト&#10;曲名&#10;曲名 / アーティスト"></textarea></label>
+      <div class="admin-actions">
+        <button class="btn ghost" id="setlist-bulk-btn" type="button">一括追加</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="admin-panel">
+    <div class="section-header">
       <h2>キー・ジャンル管理</h2>
       <span class="badge" id="meta-badge">待機中</span>
     </div>

@@ -152,6 +152,20 @@ export class D1StreamRepository {
     return row?.next_index ?? 1;
   }
 
+  /** @param {number} id @returns {Promise<Stream|null>} */
+  async findById(id) {
+    return this.client.queryFirst(
+      `SELECT id, channel_id, source_index, streamed_on, title, url, url_key, song_count, created_at
+       FROM streams WHERE id = ?`,
+      id,
+    );
+  }
+
+  /** @param {number} id @param {number} count */
+  async setSongCount(id, count) {
+    await this.client.run(`UPDATE streams SET song_count = ? WHERE id = ?`, count, id);
+  }
+
   /**
    * @param {number} id
    * @param {{ streamedOn?: string, title?: string|null }} patch

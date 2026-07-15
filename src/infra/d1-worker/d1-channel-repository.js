@@ -32,6 +32,14 @@ export class D1ChannelRepository {
     );
   }
 
+  /** @param {number} id @returns {Promise<Channel|null>} */
+  async findById(id) {
+    return this.client.queryFirst(
+      `SELECT id, code, name, sort_order, created_at FROM channels WHERE id = ?`,
+      id,
+    );
+  }
+
   /**
    * code で 1 件取得 (なければ null)。
    * 根拠: admin:257-258 `SELECT id, code, name FROM channels WHERE code = ?`。

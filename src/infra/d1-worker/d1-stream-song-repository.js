@@ -97,4 +97,58 @@ export class D1StreamSongRepository {
        ORDER BY stream_id ASC, position ASC, id ASC`,
     );
   }
+
+  /** @param {number} id */
+  async findById(id) {
+    return this.client.queryFirst(
+      `SELECT id, stream_id, song_id, position, raw_text, title_snapshot, artist_snapshot, song_key_snapshot, created_at
+       FROM stream_songs WHERE id = ?`,
+      id,
+    );
+  }
+
+  /** @param {NewStreamSong} row @returns {Promise<{ id: number }>} */
+  async insertOne(row) {
+    const result = await this.client.run(
+      `INSERT INTO stream_songs (stream_id, song_id, position, raw_text, title_snapshot, artist_snapshot, song_key_snapshot, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      row.streamId,
+      row.songId ?? null,
+      row.position,
+      row.rawText ?? null,
+      row.titleSnapshot,
+      row.artistSnapshot ?? null,
+      row.songKeySnapshot,
+      row.createdAt,
+    );
+    return { id: result.meta.last_row_id };
+  }
+
+  /** @param {number} id */
+  async deleteById(id) {
+    await this.client.run(`DELETE FROM stream_songs WHERE id = ?`, id);
+  }
+
+  /**
+   * @param {number} id
+   * @param {{ titleSnapshot: string, artistSnapshot: string|null, rawText: string|null }} patch
+   */
+  async updateById(id, patch) {
+    await this.client.run(
+      `UPDATE stream_songs SET title_snapshot = ?, artist_snapshot = ?, raw_text = ? WHERE id = ?`,
+      patch.titleSnapshot,
+      patch.artistSnapshot ?? null,
+      patch.rawText ?? null,
+      id,
+    );
+  }
+
+  /** @param {number} streamId @returns {Promise<number>} */
+  async countByStreamId(streamId) {
+    const row = await this.client.queryFirst(
+      `SELECT COUNT(*) AS cnt FROM stream_songs WHERE stream_id = ?`,
+      streamId,
+    );
+    return row?.cnt ?? 0;
+  }
 }
