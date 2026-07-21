@@ -80,6 +80,32 @@ export class D1SongChannelStatsRepository {
   }
 
   /**
+   * fromSongId の全チャンネル統計を toSongId に加算し、fromSongId を削除。
+   * stream_songs の song_id を付け替えた後に呼び出すことで統計を正しく移行する。
+   *
+   * @param {number} fromSongId
+   * @param {number} toSongId
+   * @param {string} updatedAt
+   */
+  async mergeSongStats(fromSongId, toSongId, updatedAt) {
+    await this.client.db.batch([
+      this.client.db
+        .prepare(
+          `INSERT INTO song_channel_stats (song_id, channel_id, sing_count, source_index, created_at, updated_at)
+           SELECT ?, channel_id, sing_count, NULL, ?, ?
+           FROM song_channel_stats WHERE song_id = ?
+           ON CONFLICT(song_id, channel_id) DO UPDATE SET
+             sing_count = song_channel_stats.sing_count + excluded.sing_count,
+             updated_at = excluded.updated_at`,
+        )
+        .bind(toSongId, updatedAt, updatedAt, fromSongId),
+      this.client.db
+        .prepare(`DELETE FROM song_channel_stats WHERE song_id = ?`)
+        .bind(fromSongId),
+    ]);
+  }
+
+  /**
    * 指定チャンネルの統計を全件取得。
    * 根拠: data.js:83 `filter(s => s.channel_id === channel.id)` の SQL 版。
    *

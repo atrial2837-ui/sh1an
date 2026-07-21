@@ -23,6 +23,7 @@ import { listTimestampSubmissions } from '../../usecase/timestamp/list-timestamp
 import { reviewTimestamp } from '../../usecase/timestamp/review-timestamp.js';
 import { createApprovedTimestamp } from '../../usecase/timestamp/create-approved-timestamp.js';
 import { updateTimestampTime } from '../../usecase/timestamp/update-timestamp-time.js';
+import { mergeSong } from '../../usecase/merge-song.js';
 import { getStreamSongs } from '../../usecase/get-stream-songs.js';
 import { addSongToStream } from '../../usecase/add-song-to-stream.js';
 import { removeStreamSong } from '../../usecase/remove-stream-song.js';
@@ -111,8 +112,21 @@ export function buildAdminRouter(options) {
 
   router.post(p('/songs/metadata'), auth(async (ctx) => {
     const body = (await readJsonBody(ctx.request)) || {};
-    await saveSongMetadata(getDeps(ctx), body);
-    return jsonResponse({ ok: true });
+    try {
+      await saveSongMetadata(getDeps(ctx), body);
+      return jsonResponse({ ok: true });
+    } catch (err) {
+      if (err.existingSongId) {
+        return jsonResponse({ error: err.message, existingSongId: err.existingSongId }, 400);
+      }
+      throw err;
+    }
+  }));
+
+  router.post(p('/songs/merge'), auth(async (ctx) => {
+    const body = (await readJsonBody(ctx.request)) || {};
+    const result = await mergeSong(getDeps(ctx), body);
+    return jsonResponse(result);
   }));
 
   router.post(p('/key-reference/import-csv'), auth(async (ctx) => {

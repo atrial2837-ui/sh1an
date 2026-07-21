@@ -171,4 +171,9 @@ export class D1SongRepository {
       id,
     );
   }
+
+  /** @param {number} id */
+  async deleteById(id) {
+    await this.client.run(`DELETE FROM songs WHERE id = ?`, id);
+  }
 }

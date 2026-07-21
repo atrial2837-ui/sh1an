@@ -143,6 +143,15 @@ export class D1StreamSongRepository {
     );
   }
 
+  /** @param {number} fromSongId @param {number} toSongId */
+  async replaceSongId(fromSongId, toSongId) {
+    await this.client.run(
+      `UPDATE stream_songs SET song_id = ? WHERE song_id = ?`,
+      toSongId,
+      fromSongId,
+    );
+  }
+
   /** @param {number} streamId @returns {Promise<number>} */
   async countByStreamId(streamId) {
     const row = await this.client.queryFirst(

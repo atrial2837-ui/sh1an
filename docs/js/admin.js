@@ -304,16 +304,45 @@ function initManagement() {
     const button = event.target.closest('[data-save-meta]');
     if (!button) return;
     const row = button.closest('[data-song-id]');
+    const songId = row.dataset.songId;
+    const payload = {
+      songId,
+      title:      row.querySelector('[data-field="title"]').value,
+      artist:     row.querySelector('[data-field="artist"]').value,
+      displayKey: row.querySelector('[data-field="displayKey"]').value,
+      genre:      row.querySelector('[data-field="genre"]').value,
+    };
     $('#meta-status').textContent = '保存中...';
     try {
-      await adminApi('songs/metadata', {
-        songId: row.dataset.songId,
-        title: row.querySelector('[data-field="title"]').value,
-        artist: row.querySelector('[data-field="artist"]').value,
-        displayKey: row.querySelector('[data-field="displayKey"]').value,
-        genre: row.querySelector('[data-field="genre"]').value,
+      const res = await fetch('/api/admin/songs/metadata', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-admin-token': adminToken?.value || '' },
+        body: JSON.stringify(payload),
       });
-      $('#meta-status').textContent = '保存しました。必要なら静的データ生成を開始してください。';
+      const data = await res.json();
+      if (res.ok) {
+        $('#meta-status').textContent = '保存しました。必要なら静的データ生成を開始してください。';
+        return;
+      }
+      // 重複エラー → 統合を提案
+      if (data.existingSongId) {
+        const msg = `${data.error}\n\n既存の正しい曲（ID: ${data.existingSongId}）にセトリ参照を移動して、この曲（ID: ${songId}）を削除しますか？`;
+        if (!confirm(msg)) {
+          $('#meta-status').textContent = data.error;
+          return;
+        }
+        $('#meta-status').textContent = '統合中…';
+        await adminFetch('POST', 'songs/merge', { fromId: Number(songId), toId: data.existingSongId });
+        $('#meta-status').textContent = `統合しました（ID: ${songId} → ${data.existingSongId}）。必要なら静的データ生成を開始してください。`;
+        // 検索結果を再読み込み
+        const q = $('#song-query')?.value;
+        if (q) {
+          const fresh = await adminApi(`songs/search?q=${encodeURIComponent(q)}`);
+          renderSongMeta(fresh.songs);
+        }
+        return;
+      }
+      throw new Error(data.error || 'Request failed');
     } catch (error) {
       $('#meta-status').textContent = error.message || String(error);
     }

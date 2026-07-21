@@ -72,7 +72,9 @@ export async function saveSongMetadata(deps, input) {
   const songKey = buildSongKey(cleanTitle, cleanArtist);
   const existing = await deps.songs.findByKey(songKey);
   if (existing && existing.id !== songId) {
-    throw new ValidationError('同じ曲名とアーティスト名の曲が既に存在します');
+    const err = new ValidationError('同じ曲名とアーティスト名の曲が既に存在します');
+    err.existingSongId = existing.id;
+    throw err;
   }
 
   let artistId = song.artist_id ?? undefined;
