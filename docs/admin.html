@@ -317,6 +317,13 @@
   </section>
 </main>
 
+<dialog id="confirm-dialog" style="border:1px solid var(--border,#ccc);border-radius:8px;padding:1.5rem 1.75rem;max-width:420px;width:90%;background:var(--surface,#fff);color:var(--ink,#111);box-shadow:0 4px 24px rgba(0,0,0,.18)">
+  <p id="confirm-dialog-msg" style="margin:0 0 1.25rem;white-space:pre-wrap;line-height:1.6"></p>
+  <div style="display:flex;gap:.75rem;justify-content:flex-end">
+    <button id="confirm-dialog-cancel" class="btn ghost" type="button">キャンセル</button>
+    <button id="confirm-dialog-ok" class="btn primary" type="button">OK</button>
+  </div>
+</dialog>
 <script type="module" src="dist/admin.js"></script>
 </body>
 </html>

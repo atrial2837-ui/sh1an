@@ -13,6 +13,29 @@ if (adminToken) {
   adminToken.addEventListener('input', () => localStorage.setItem('adminToken', adminToken.value));
 }
 
+function showConfirm(msg) {
+  const dlg = document.getElementById('confirm-dialog');
+  if (!dlg) return Promise.resolve(window.confirm(msg));
+  document.getElementById('confirm-dialog-msg').textContent = msg;
+  dlg.showModal();
+  return new Promise((resolve) => {
+    const ok  = document.getElementById('confirm-dialog-ok');
+    const can = document.getElementById('confirm-dialog-cancel');
+    function done(val) {
+      dlg.close();
+      ok.removeEventListener('click', onOk);
+      can.removeEventListener('click', onCancel);
+      dlg.removeEventListener('cancel', onCancel);
+      resolve(val);
+    }
+    function onOk()     { done(true);  }
+    function onCancel() { done(false); }
+    ok.addEventListener('click',  onOk);
+    can.addEventListener('click', onCancel);
+    dlg.addEventListener('cancel', onCancel);
+  });
+}
+
 function parseDate(value) {
   if (!value) return null;
   const text = String(value).replaceAll('/', '-');
@@ -327,7 +350,7 @@ function initManagement() {
       // 重複エラー → 統合を提案
       if (data.existingSongId) {
         const msg = `${data.error}\n\n既存の正しい曲（ID: ${data.existingSongId}）にセトリ参照を移動して、この曲（ID: ${songId}）を削除しますか？`;
-        if (!confirm(msg)) {
+        if (!await showConfirm(msg)) {
           $('#meta-status').textContent = data.error;
           return;
         }
