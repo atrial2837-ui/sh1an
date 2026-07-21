@@ -1,0 +1,5 @@
+# stampAssetVersions() がハッシュするファイルを LF 固定にして
+# Windows / CI 間のバイト差異を防ぐ
+docs/dist/*.js  eol=lf
+docs/css/*.css  eol=lf
+docs/index.html eol=lf

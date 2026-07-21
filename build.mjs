@@ -88,7 +88,10 @@ function stampAssetVersions() {
   ];
   const h = createHash('sha1');
   for (const f of hashed) {
-    if (existsSync(f)) h.update(readFileSync(f));
+    if (existsSync(f)) {
+      // CRLF→LF 正規化してからハッシュ (Windows/CI 間でバイト差異が出ないよう)
+      h.update(readFileSync(f).toString().replace(/\r\n/g, '\n'));
+    }
   }
   const ver = h.digest('hex').slice(0, 10);
   const page = join(__dirname, 'docs', 'index.html');
