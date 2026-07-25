@@ -168,22 +168,28 @@ export class D1StreamRepository {
 
   /**
    * @param {number} id
-   * @param {{ streamedOn?: string, title?: string|null }} patch
+   * @param {{ streamedOn?: string, title?: string|null, sourceIndex?: number }} patch
    */
   async updateMetadata(id, patch) {
     const current = await this.client.queryFirst(
-      `SELECT streamed_on, title FROM streams WHERE id = ?`,
+      `SELECT source_index, streamed_on, title FROM streams WHERE id = ?`,
       id,
     );
     if (!current) return null;
     return this.client.queryFirst(
       `UPDATE streams
-       SET streamed_on = ?, title = ?
+       SET source_index = ?, streamed_on = ?, title = ?
        WHERE id = ?
        RETURNING id, channel_id, source_index, streamed_on, title, url, url_key, song_count, created_at`,
+      patch.sourceIndex ?? current.source_index,
       patch.streamedOn ?? current.streamed_on,
       patch.title === undefined ? current.title : patch.title,
       id,
     );
+  }
+
+  /** @param {number} id */
+  async deleteById(id) {
+    await this.client.run(`DELETE FROM streams WHERE id = ?`, id);
   }
 }

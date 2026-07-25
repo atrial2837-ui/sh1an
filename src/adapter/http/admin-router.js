@@ -28,6 +28,7 @@ import { getStreamSongs } from '../../usecase/get-stream-songs.js';
 import { addSongToStream } from '../../usecase/add-song-to-stream.js';
 import { removeStreamSong } from '../../usecase/remove-stream-song.js';
 import { updateStreamSong } from '../../usecase/update-stream-song.js';
+import { deleteStream } from '../../usecase/delete-stream.js';
 
 /**
  * @typedef {import('./router.js').RouteContext} RouteContext
@@ -108,6 +109,12 @@ export function buildAdminRouter(options) {
     const body = (await readJsonBody(ctx.request)) || {};
     const result = await updateStreamMetadata(getDeps(ctx), body);
     return jsonResponse({ ok: true, stream: result.stream });
+  }));
+
+  router.post(p('/streams/delete'), auth(async (ctx) => {
+    const body = (await readJsonBody(ctx.request)) || {};
+    const result = await deleteStream(getDeps(ctx), body);
+    return jsonResponse(result);
   }));
 
   router.post(p('/songs/metadata'), auth(async (ctx) => {

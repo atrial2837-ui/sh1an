@@ -17,6 +17,8 @@ export async function updateStreamMetadata(deps, input) {
   const sourceIndex = Number(input.sourceIndex);
   const streamedOn = String(input.streamedOn || '').trim();
   const title = String(input.title ?? '').trim();
+  const newSourceIndex = input.newSourceIndex !== undefined && input.newSourceIndex !== ''
+    ? Number(input.newSourceIndex) : undefined;
 
   if (!channelCode) throw new ValidationError('channelCode を指定してください');
   if (!Number.isInteger(sourceIndex) || sourceIndex < 1) {
@@ -25,13 +27,22 @@ export async function updateStreamMetadata(deps, input) {
   if (streamedOn && !/^\d{4}-\d{2}-\d{2}$/.test(streamedOn)) {
     throw new ValidationError('配信日は YYYY-MM-DD 形式で入力してください');
   }
+  if (newSourceIndex !== undefined && (!Number.isInteger(newSourceIndex) || newSourceIndex < 1)) {
+    throw new ValidationError('新しい枠番号は 1 以上の整数で入力してください');
+  }
 
   const channel = await deps.channels.findByCode(channelCode);
   if (!channel) throw new ValidationError(`未知のチャンネルです: ${channelCode}`);
   const stream = await deps.streams.findByChannelSourceIndex(channel.id, sourceIndex);
   if (!stream) throw new NotFoundError('指定した歌枠が見つかりません');
 
+  if (newSourceIndex !== undefined && newSourceIndex !== stream.source_index) {
+    const conflict = await deps.streams.findByChannelSourceIndex(channel.id, newSourceIndex);
+    if (conflict) throw new ValidationError(`枠番号 ${newSourceIndex} は既に使われています（stream_id=${conflict.id}）`);
+  }
+
   const updated = await deps.streams.updateMetadata(stream.id, {
+    sourceIndex: newSourceIndex,
     streamedOn: streamedOn || undefined,
     title: title || null,
   });

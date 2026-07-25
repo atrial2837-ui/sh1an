@@ -296,16 +296,36 @@ function initManagement() {
   });
 
   $('#save-stream-meta')?.addEventListener('click', async () => {
-    if (!confirm('指定した歌枠のタイトル・日付を更新します。よろしいですか？')) return;
+    if (!await showConfirm('指定した歌枠のタイトル・日付を更新します。よろしいですか？')) return;
     $('#stream-meta-status').textContent = '保存中...';
     try {
+      const newIdx = $('#edit-new-source-index')?.value;
       const data = await adminApi('streams/metadata', {
         channelCode: $('#edit-channel').value,
         sourceIndex: $('#edit-source-index').value,
         streamedOn: $('#edit-streamed-on').value,
         title: $('#edit-stream-title').value,
+        ...(newIdx ? { newSourceIndex: newIdx } : {}),
       });
       $('#stream-meta-status').textContent = `保存しました: stream_id=${data.stream?.id ?? '-'}。必要なら静的データ生成を開始してください。`;
+      if (newIdx) $('#edit-source-index').value = newIdx;
+      $('#edit-new-source-index').value = '';
+      loadStatus();
+    } catch (error) {
+      $('#stream-meta-status').textContent = error.message || String(error);
+    }
+  });
+
+  $('#delete-stream')?.addEventListener('click', async () => {
+    const ch  = $('#edit-channel').value;
+    const idx = $('#edit-source-index').value;
+    if (!idx) { $('#stream-meta-status').textContent = '枠番号を入力してください'; return; }
+    const msg = `チャンネル「${ch}」の第${idx}枠を削除します。この操作は取り消せません。よろしいですか？`;
+    if (!await showConfirm(msg)) return;
+    $('#stream-meta-status').textContent = '削除中...';
+    try {
+      const data = await adminApi('streams/delete', { channelCode: ch, sourceIndex: idx });
+      $('#stream-meta-status').textContent = `削除しました: stream_id=${data.deleted?.id ?? '-'}（第${data.deleted?.sourceIndex}枠）。`;
       loadStatus();
     } catch (error) {
       $('#stream-meta-status').textContent = error.message || String(error);
