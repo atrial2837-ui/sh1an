@@ -133,6 +133,17 @@
     </div>
     <p class="admin-note" id="meta-status"></p>
     <div id="song-meta-box"></div>
+    <hr style="margin:16px 0;border:none;border-top:1px solid var(--border)">
+    <h3 style="font-size:14px;font-weight:600;margin-bottom:8px">IDで直接統合</h3>
+    <p class="admin-note">曲名変更で自動統合できない場合（記号の文字コード違いなど）にIDを直接指定して統合します。上の検索結果の左端にIDが表示されます。削除側→残す側の順で入力してください。</p>
+    <div class="admin-form-grid">
+      <label>削除側の曲ID（消える方）<input id="merge-from-id" type="number" min="1" placeholder="例: 123"></label>
+      <label>残す側の曲ID（残る方）<input id="merge-to-id" type="number" min="1" placeholder="例: 456"></label>
+    </div>
+    <div class="admin-actions">
+      <button class="btn danger" id="merge-songs-direct" type="button">この2曲を統合</button>
+    </div>
+    <p class="admin-note" id="merge-status"></p>
   </section>
 
   <section class="admin-panel">

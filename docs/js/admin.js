@@ -141,10 +141,11 @@ function renderSongMeta(rows) {
   $('#song-meta-box').innerHTML = `
     <div class="admin-table-wrap">
       <table class="admin-table">
-        <thead><tr><th>曲</th><th>歌手</th><th>キー</th><th>ジャンル</th><th></th></tr></thead>
+        <thead><tr><th>ID</th><th>曲</th><th>歌手</th><th>キー</th><th>ジャンル</th><th></th></tr></thead>
         <tbody>
           ${rows.map((row) => `
             <tr data-song-id="${row.id}">
+              <td style="color:var(--ink-mute);font-size:11px;white-space:nowrap">${row.id}</td>
               <td><input class="admin-compact-input" data-field="title" value="${escapeHtml(row.title || '')}"></td>
               <td><input class="admin-compact-input" data-field="artist" value="${escapeHtml(row.artist || '')}"></td>
               <td><input class="admin-compact-input" data-field="displayKey" value="${escapeHtml(row.display_key || '')}"></td>
@@ -320,7 +321,7 @@ function initManagement() {
     const ch  = $('#edit-channel').value;
     const idx = $('#edit-source-index').value;
     if (!idx) { $('#stream-meta-status').textContent = '枠番号を入力してください'; return; }
-    const msg = `チャンネル「${ch}」の第${idx}枠を削除します。この操作は取り消せません。よろしいですか？`;
+    const msg = `チャンネル「${ch}」の第${idx}枠を削除します。\n曲がある場合はセトリも一緒に削除されます。この操作は取り消せません。よろしいですか？`;
     if (!await showConfirm(msg)) return;
     $('#stream-meta-status').textContent = '削除中...';
     try {
@@ -426,6 +427,29 @@ function initManagement() {
       $('#static-status').textContent = `起動しました: ${data.owner}/${data.repo} / ${data.workflow}\nGitHub Actions完了後、Pagesへ自動反映されます。`;
     } catch (error) {
       $('#static-status').textContent = error.message || String(error);
+    }
+  });
+
+  $('#merge-songs-direct')?.addEventListener('click', async () => {
+    const fromId = $('#merge-from-id').value.trim();
+    const toId   = $('#merge-to-id').value.trim();
+    if (!fromId || !toId) { $('#merge-status').textContent = '両方のIDを入力してください'; return; }
+    const msg = `曲ID ${fromId} を曲ID ${toId} に統合します。\nID ${fromId} の曲は削除され、セトリ参照が ${toId} に移動します。よろしいですか？`;
+    if (!await showConfirm(msg)) return;
+    $('#merge-status').textContent = '統合中...';
+    try {
+      const data = await adminApi('songs/merge', { fromId: Number(fromId), toId: Number(toId) });
+      $('#merge-status').textContent = `統合しました: 「${data.from?.title}」→「${data.into?.title}」`;
+      $('#merge-from-id').value = '';
+      $('#merge-to-id').value = '';
+      const q = $('#song-query')?.value;
+      if (q) {
+        const fresh = await adminApi(`songs/search?q=${encodeURIComponent(q)}`);
+        renderSongMeta(fresh.songs);
+        $('#meta-status').textContent = `${fresh.songs.length}件`;
+      }
+    } catch (error) {
+      $('#merge-status').textContent = error.message || String(error);
     }
   });
 }

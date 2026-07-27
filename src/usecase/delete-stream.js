@@ -13,12 +13,18 @@ export async function deleteStream(deps, { channelCode, sourceIndex }) {
   const stream = await deps.streams.findByChannelSourceIndex(channel.id, idx);
   if (!stream) throw new NotFoundError('指定した歌枠が見つかりません');
 
-  if ((stream.song_count ?? 0) > 0) {
-    throw new ValidationError(
-      `この歌枠には ${stream.song_count} 曲あります。先にセトリ編集画面で全曲を削除してから実行してください。`,
-    );
+  const songCount = stream.song_count ?? 0;
+
+  if (songCount > 0) {
+    const songs = await deps.streamSongs.findByStreamId(stream.id);
+    const songIds = songs.map((s) => s.song_id).filter((id) => id != null);
+    if (songIds.length > 0) {
+      const now = deps.clock.now().toISOString();
+      await deps.stats.decrementBySongIds(songIds, channel.id, now);
+    }
+    await deps.streamSongs.deleteByStreamId(stream.id);
   }
 
   await deps.streams.deleteById(stream.id);
-  return { ok: true, deleted: { id: stream.id, sourceIndex: stream.source_index, title: stream.title } };
+  return { ok: true, deleted: { id: stream.id, sourceIndex: stream.source_index, title: stream.title, songCount } };
 }
