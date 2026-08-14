@@ -153,6 +153,16 @@ export function buildAdminRouter(options) {
 
   // ─── セトリ管理 ──────────────────────────────────────────────────────────
 
+  router.get(p('/streams'), auth(async (ctx) => {
+    const channelCode = ctx.query?.get('channelCode') || '';
+    const deps = getDeps(ctx);
+    if (!channelCode) return jsonResponse({ streams: [] });
+    const channel = await deps.channels.findByCode(channelCode);
+    if (!channel) return jsonResponse({ streams: [] });
+    const streams = await deps.streams.findAllByChannel(channel.id);
+    return jsonResponse({ streams });
+  }));
+
   router.get(p('/streams/songs'), auth(async (ctx) => {
     const deps = getDeps(ctx);
     const channelCode = ctx.query.get('channel') || '';

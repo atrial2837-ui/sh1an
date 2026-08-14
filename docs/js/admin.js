@@ -296,21 +296,83 @@ function initManagement() {
     }
   });
 
+  // 現在選択中の歌枠データ
+  let _editStream = null;
+
+  function _renderStreamOptions(streams, channelCode) {
+    const sel = $('#stream-select');
+    sel.innerHTML = streams.map((s) => {
+      const label = [
+        `第${s.source_index}枠`,
+        s.streamed_on || '',
+        s.title || '（タイトルなし）',
+        `${s.song_count ?? 0}曲`,
+      ].join(' ｜ ');
+      return `<option value="${s.source_index}" data-id="${s.id}" data-streamed-on="${s.streamed_on || ''}" data-title="${escapeHtml(s.title || '')}" data-song-count="${s.song_count ?? 0}" data-ch="${channelCode}">${escapeHtml(label)}</option>`;
+    }).join('');
+    // 先頭を選択状態にして詳細を反映
+    sel.dispatchEvent(new Event('change'));
+  }
+
+  $('#load-streams')?.addEventListener('click', async () => {
+    const ch = $('#edit-channel').value;
+    $('#stream-meta-status').textContent = '読み込み中...';
+    try {
+      const data = await adminApi(`streams?channelCode=${encodeURIComponent(ch)}`);
+      if (!data.streams?.length) {
+        $('#stream-meta-status').textContent = '歌枠が見つかりません';
+        $('#stream-edit-wrap').style.display = 'none';
+        return;
+      }
+      $('#stream-edit-wrap').style.display = '';
+      _renderStreamOptions(data.streams, ch);
+      $('#stream-meta-status').textContent = `${data.streams.length}件の歌枠を読み込みました`;
+    } catch (error) {
+      $('#stream-meta-status').textContent = error.message || String(error);
+    }
+  });
+
+  $('#stream-select')?.addEventListener('change', () => {
+    const opt = $('#stream-select').selectedOptions[0];
+    if (!opt) return;
+    _editStream = {
+      channelCode:  opt.dataset.ch,
+      sourceIndex:  Number(opt.value),
+      id:           Number(opt.dataset.id),
+      streamedOn:   opt.dataset.streamedOn,
+      title:        opt.dataset.title,
+      songCount:    Number(opt.dataset.songCount),
+    };
+    $('#edit-streamed-on').value    = _editStream.streamedOn;
+    $('#edit-stream-title').value   = _editStream.title;
+    $('#edit-new-source-index').value = '';
+    $('#stream-meta-status').textContent = '';
+  });
+
   $('#save-stream-meta')?.addEventListener('click', async () => {
-    if (!await showConfirm('指定した歌枠のタイトル・日付を更新します。よろしいですか？')) return;
+    if (!_editStream) { $('#stream-meta-status').textContent = '歌枠を選択してください'; return; }
+    if (!await showConfirm(`第${_editStream.sourceIndex}枠「${_editStream.title || 'タイトルなし'}」の情報を更新します。よろしいですか？`)) return;
     $('#stream-meta-status').textContent = '保存中...';
     try {
       const newIdx = $('#edit-new-source-index')?.value;
       const data = await adminApi('streams/metadata', {
-        channelCode: $('#edit-channel').value,
-        sourceIndex: $('#edit-source-index').value,
-        streamedOn: $('#edit-streamed-on').value,
-        title: $('#edit-stream-title').value,
-        ...(newIdx ? { newSourceIndex: newIdx } : {}),
+        channelCode:  _editStream.channelCode,
+        sourceIndex:  _editStream.sourceIndex,
+        streamedOn:   $('#edit-streamed-on').value,
+        title:        $('#edit-stream-title').value,
+        ...(newIdx ? { newSourceIndex: Number(newIdx) } : {}),
       });
-      $('#stream-meta-status').textContent = `保存しました: stream_id=${data.stream?.id ?? '-'}。必要なら静的データ生成を開始してください。`;
-      if (newIdx) $('#edit-source-index').value = newIdx;
-      $('#edit-new-source-index').value = '';
+      const saved = data.stream;
+      $('#stream-meta-status').textContent = `保存しました（stream_id=${saved?.id ?? '-'}）。必要なら静的データ生成を開始してください。`;
+      // ドロップダウンを再読み込みして反映
+      const fresh = await adminApi(`streams?channelCode=${encodeURIComponent(_editStream.channelCode)}`);
+      _renderStreamOptions(fresh.streams, _editStream.channelCode);
+      // 保存した枠を再選択
+      const targetIdx = newIdx ? Number(newIdx) : _editStream.sourceIndex;
+      const sel = $('#stream-select');
+      for (const opt of sel.options) {
+        if (Number(opt.value) === targetIdx) { sel.value = opt.value; sel.dispatchEvent(new Event('change')); break; }
+      }
       loadStatus();
     } catch (error) {
       $('#stream-meta-status').textContent = error.message || String(error);
@@ -318,15 +380,23 @@ function initManagement() {
   });
 
   $('#delete-stream')?.addEventListener('click', async () => {
-    const ch  = $('#edit-channel').value;
-    const idx = $('#edit-source-index').value;
-    if (!idx) { $('#stream-meta-status').textContent = '枠番号を入力してください'; return; }
-    const msg = `チャンネル「${ch}」の第${idx}枠を削除します。\n曲がある場合はセトリも一緒に削除されます。この操作は取り消せません。よろしいですか？`;
+    if (!_editStream) { $('#stream-meta-status').textContent = '歌枠を選択してください'; return; }
+    const { channelCode, sourceIndex, title, songCount } = _editStream;
+    const songNote = songCount > 0 ? `\nセトリ ${songCount} 曲も一緒に削除されます。` : '';
+    const msg = `第${sourceIndex}枠「${title || 'タイトルなし'}」を削除します。${songNote}\nこの操作は取り消せません。よろしいですか？`;
     if (!await showConfirm(msg)) return;
     $('#stream-meta-status').textContent = '削除中...';
     try {
-      const data = await adminApi('streams/delete', { channelCode: ch, sourceIndex: idx });
-      $('#stream-meta-status').textContent = `削除しました: stream_id=${data.deleted?.id ?? '-'}（第${data.deleted?.sourceIndex}枠）。`;
+      const data = await adminApi('streams/delete', { channelCode, sourceIndex });
+      $('#stream-meta-status').textContent = `削除しました（第${data.deleted?.sourceIndex}枠、${data.deleted?.songCount}曲）。静的データ生成を実行してください。`;
+      _editStream = null;
+      // ドロップダウンを再読み込み
+      const fresh = await adminApi(`streams?channelCode=${encodeURIComponent(channelCode)}`);
+      if (fresh.streams?.length) {
+        _renderStreamOptions(fresh.streams, channelCode);
+      } else {
+        $('#stream-edit-wrap').style.display = 'none';
+      }
       loadStatus();
     } catch (error) {
       $('#stream-meta-status').textContent = error.message || String(error);

@@ -65,19 +65,29 @@
   <section class="admin-panel">
     <div class="section-header">
       <h2>歌枠情報編集</h2>
-      <span class="badge">タイトル・日付・番号</span>
+      <span class="badge">読み込み・選択・編集</span>
     </div>
-    <p class="admin-note">登録済み歌枠の枠番号を指定して、配信タイトル・配信日・枠番号を更新します。セトリ内容は変更されません。</p>
+    <p class="admin-note">チャンネルを選んで読み込みボタンを押すと、登録済み歌枠が一覧表示されます。</p>
     <div class="admin-form-grid">
       <label>チャンネル<select id="edit-channel"></select></label>
-      <label>現在の枠番号<input id="edit-source-index" type="number" min="1" placeholder="例: 173"></label>
-      <label>配信日<input id="edit-streamed-on" type="date"></label>
-      <label>配信タイトル<input id="edit-stream-title" type="text" placeholder="新しい配信タイトル"></label>
-      <label>新しい枠番号（変更する場合のみ）<input id="edit-new-source-index" type="number" min="1" placeholder="例: 172"></label>
     </div>
     <div class="admin-actions">
-      <button class="btn primary" id="save-stream-meta" type="button">歌枠情報を保存</button>
-      <button class="btn danger" id="delete-stream" type="button">この歌枠を削除</button>
+      <button class="btn ghost" id="load-streams" type="button">歌枠を読み込み</button>
+    </div>
+    <div id="stream-edit-wrap" style="display:none;margin-top:12px">
+      <label style="display:block;margin-bottom:12px">
+        <span style="display:block;font-size:13px;font-weight:500;margin-bottom:4px">歌枠を選択</span>
+        <select id="stream-select" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--ink);font-size:13px"></select>
+      </label>
+      <div class="admin-form-grid">
+        <label>配信日<input id="edit-streamed-on" type="date"></label>
+        <label>配信タイトル<input id="edit-stream-title" type="text" placeholder="新しい配信タイトル"></label>
+        <label>枠番号を変更する場合のみ<input id="edit-new-source-index" type="number" min="1" placeholder="例: 172"></label>
+      </div>
+      <div class="admin-actions">
+        <button class="btn primary" id="save-stream-meta" type="button">歌枠情報を保存</button>
+        <button class="btn danger" id="delete-stream" type="button">この歌枠を削除</button>
+      </div>
     </div>
     <p class="admin-note" id="stream-meta-status"></p>
   </section>
