@@ -206,7 +206,7 @@ function loadChannels() {
   const html = channels.map((channel) => (
     `<option value="${escapeHtml(channel.id)}">${escapeHtml(channel.label)}</option>`
   )).join('');
-  for (const id of ['#channel', '#edit-channel', '#setlist-channel']) {
+  for (const id of ['#channel', '#edit-channel']) {
     const el = $(id);
     if (!el) continue;
     el.innerHTML = html;
@@ -347,7 +347,23 @@ function initManagement() {
     $('#edit-stream-title').value   = _editStream.title;
     $('#edit-new-source-index').value = '';
     $('#stream-meta-status').textContent = '';
+    // セトリ編集タブと共有する状態を更新し、セトリも読み込む
+    _setlistChannel = _editStream.channelCode;
+    _setlistIndex   = _editStream.sourceIndex;
+    loadSetlist();
   });
+
+  // 配信情報 / セトリ のタブ切り替え
+  for (const btn of document.querySelectorAll('[data-stab]')) {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.stab;
+      for (const b of document.querySelectorAll('[data-stab]')) {
+        b.classList.toggle('is-active', b.dataset.stab === target);
+      }
+      $('#stab-info').style.display    = target === 'info'    ? '' : 'none';
+      $('#stab-setlist').style.display = target === 'setlist' ? '' : 'none';
+    });
+  }
 
   $('#save-stream-meta')?.addEventListener('click', async () => {
     if (!_editStream) { $('#stream-meta-status').textContent = '歌枠を選択してください'; return; }
@@ -934,31 +950,19 @@ function renderSetlist(songs) {
 }
 
 async function loadSetlist() {
-  const channelCode = $('#setlist-channel')?.value;
-  const sourceIndex = $('#setlist-index')?.value;
-  if (!channelCode || !sourceIndex) {
-    $('#setlist-status').textContent = 'チャンネルと枠番号を入力してください';
-    return;
-  }
-  $('#setlist-status').textContent = '読み込み中…';
+  const channelCode = _setlistChannel;
+  const sourceIndex = _setlistIndex;
+  if (!channelCode || !sourceIndex) return;
   try {
     const data = await adminApi(`streams/songs?channel=${encodeURIComponent(channelCode)}&index=${encodeURIComponent(sourceIndex)}`);
-    _setlistChannel = channelCode;
-    _setlistIndex   = sourceIndex;
-    const title = data.stream?.title ? `「${data.stream.title}」` : `第${sourceIndex}枠`;
-    $('#setlist-status').textContent = `${title} 読み込み完了`;
-    $('#setlist-badge').textContent = `${(data.songs || []).length}曲`;
-    $('#setlist-add-form').style.display = '';
     renderSetlist(data.songs || []);
   } catch (err) {
-    $('#setlist-status').textContent = `エラー: ${err.message || err}`;
-    $('#setlist-add-form').style.display = 'none';
+    $('#setlist-box').innerHTML = `<p class="admin-note">セトリ読み込みエラー: ${escapeHtml(err.message || String(err))}</p>`;
+    $('#setlist-badge').textContent = '—';
   }
 }
 
 function initSetlistEditor() {
-  $('#setlist-load')?.addEventListener('click', loadSetlist);
-
   $('#setlist-box')?.addEventListener('click', async (e) => {
     const editBtn = e.target.closest('[data-ss-edit]');
     const delBtn  = e.target.closest('[data-ss-del]');
@@ -988,13 +992,13 @@ function initSetlistEditor() {
       row.querySelector(`[data-ss-save]`)?.addEventListener('click', async () => {
         const newTitle  = row.querySelector('#ss-edit-title')?.value.trim()  || '';
         const newArtist = row.querySelector('#ss-edit-artist')?.value.trim() || '';
-        $('#setlist-status').textContent = '保存中…';
+        $('#stream-meta-status').textContent = '保存中…';
         try {
           await adminFetch('PATCH', `streams/songs/${id}`, { title: newTitle, artist: newArtist });
-          $('#setlist-status').textContent = '保存しました。必要なら静的データ生成を開始してください。';
+          $('#stream-meta-status').textContent = '保存しました。必要なら静的データ生成を開始してください。';
           await loadSetlist();
         } catch (err) {
-          $('#setlist-status').textContent = `エラー: ${err.message || err}`;
+          $('#stream-meta-status').textContent = `エラー: ${err.message || err}`;
         }
       });
     }
@@ -1002,13 +1006,13 @@ function initSetlistEditor() {
     if (delBtn) {
       const id = delBtn.dataset.ssDel;
       if (!confirm('この曲をセトリから削除しますか？')) return;
-      $('#setlist-status').textContent = '削除中…';
+      $('#stream-meta-status').textContent = '削除中…';
       try {
         await adminFetch('DELETE', `streams/songs/${id}`);
-        $('#setlist-status').textContent = '削除しました。必要なら静的データ生成を開始してください。';
+        $('#stream-meta-status').textContent = '削除しました。必要なら静的データ生成を開始してください。';
         await loadSetlist();
       } catch (err) {
-        $('#setlist-status').textContent = `エラー: ${err.message || err}`;
+        $('#stream-meta-status').textContent = `エラー: ${err.message || err}`;
       }
     }
   });
@@ -1017,28 +1021,28 @@ function initSetlistEditor() {
     if (!_setlistChannel || !_setlistIndex) return;
     const title  = $('#setlist-add-title')?.value.trim();
     const artist = $('#setlist-add-artist')?.value.trim() || '';
-    if (!title) { $('#setlist-status').textContent = '曲名を入力してください'; return; }
-    $('#setlist-status').textContent = '追加中…';
+    if (!title) { $('#stream-meta-status').textContent = '曲名を入力してください'; return; }
+    $('#stream-meta-status').textContent = '追加中…';
     try {
       await adminApi('streams/songs', { channelCode: _setlistChannel, sourceIndex: _setlistIndex, title, artist });
-      $('#setlist-status').textContent = '追加しました。必要なら静的データ生成を開始してください。';
+      $('#stream-meta-status').textContent = '追加しました。必要なら静的データ生成を開始してください。';
       $('#setlist-add-title').value  = '';
       $('#setlist-add-artist').value = '';
       await loadSetlist();
     } catch (err) {
-      $('#setlist-status').textContent = `エラー: ${err.message || err}`;
+      $('#stream-meta-status').textContent = `エラー: ${err.message || err}`;
     }
   });
 
   $('#setlist-bulk-btn')?.addEventListener('click', async () => {
     if (!_setlistChannel || !_setlistIndex) return;
     const text  = $('#setlist-bulk-text')?.value.trim();
-    if (!text) { $('#setlist-status').textContent = '曲リストを入力してください'; return; }
+    if (!text) { $('#stream-meta-status').textContent = '曲リストを入力してください'; return; }
     const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
     if (!confirm(`${lines.length}曲を一括追加しますか？`)) return;
     let ok = 0;
     for (let i = 0; i < lines.length; i++) {
-      $('#setlist-status').textContent = `一括追加中… ${i}/${lines.length}`;
+      $('#stream-meta-status').textContent = `一括追加中… ${i}/${lines.length}`;
       const parts  = lines[i].split('/');
       const title  = parts[0].trim();
       const artist = parts[1]?.trim() || '';
@@ -1048,7 +1052,7 @@ function initSetlistEditor() {
         ok++;
       } catch (_) {}
     }
-    $('#setlist-status').textContent = `${ok}曲を追加しました。必要なら静的データ生成を開始してください。`;
+    $('#stream-meta-status').textContent = `${ok}曲を追加しました。必要なら静的データ生成を開始してください。`;
     $('#setlist-bulk-text').value = '';
     await loadSetlist();
   });

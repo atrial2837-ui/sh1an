@@ -201,3 +201,11 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* 歌枠編集パネルの 配信情報 / セトリ サブタブ */
+.admin-subtabs .btn.ghost.is-active {
+  background: var(--primary-soft, rgba(54, 126, 191, .18));
+  border-color: var(--primary, #367ebf);
+  color: var(--primary-strong, #7ab8ea);
+  font-weight: 600;
+}

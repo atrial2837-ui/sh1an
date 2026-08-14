@@ -64,66 +64,60 @@
 
   <section class="admin-panel">
     <div class="section-header">
-      <h2>歌枠情報編集</h2>
-      <span class="badge">読み込み・選択・編集</span>
+      <h2>歌枠の編集</h2>
+      <span class="badge" id="setlist-badge">—</span>
     </div>
-    <p class="admin-note">チャンネルを選んで読み込みボタンを押すと、登録済み歌枠が一覧表示されます。</p>
+    <p class="admin-note">チャンネルを選んで読み込むと、登録済み歌枠を選んで配信情報とセトリをまとめて編集できます。</p>
     <div class="admin-form-grid">
       <label>チャンネル<select id="edit-channel"></select></label>
     </div>
     <div class="admin-actions">
       <button class="btn ghost" id="load-streams" type="button">歌枠を読み込み</button>
     </div>
-    <div id="stream-edit-wrap" style="display:none;margin-top:12px">
-      <label style="display:block;margin-bottom:12px">
+
+    <div id="stream-edit-wrap" style="display:none;margin-top:16px">
+      <label style="display:block;margin-bottom:16px">
         <span style="display:block;font-size:13px;font-weight:500;margin-bottom:4px">歌枠を選択</span>
         <select id="stream-select" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--ink);font-size:13px"></select>
       </label>
-      <div class="admin-form-grid">
-        <label>配信日<input id="edit-streamed-on" type="date"></label>
-        <label>配信タイトル<input id="edit-stream-title" type="text" placeholder="新しい配信タイトル"></label>
-        <label>枠番号を変更する場合のみ<input id="edit-new-source-index" type="number" min="1" placeholder="例: 172"></label>
+
+      <div class="admin-subtabs" style="display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:10px">
+        <button class="btn ghost is-active" id="tab-btn-info" data-stab="info" type="button">配信情報</button>
+        <button class="btn ghost" id="tab-btn-setlist" data-stab="setlist" type="button">セトリ</button>
       </div>
-      <div class="admin-actions">
-        <button class="btn primary" id="save-stream-meta" type="button">歌枠情報を保存</button>
-        <button class="btn danger" id="delete-stream" type="button">この歌枠を削除</button>
+
+      <div id="stab-info">
+        <div class="admin-form-grid">
+          <label>配信日<input id="edit-streamed-on" type="date"></label>
+          <label>配信タイトル<input id="edit-stream-title" type="text" placeholder="新しい配信タイトル"></label>
+          <label>枠番号を変更する場合のみ<input id="edit-new-source-index" type="number" min="1" placeholder="例: 172"></label>
+        </div>
+        <div class="admin-actions">
+          <button class="btn primary" id="save-stream-meta" type="button">配信情報を保存</button>
+          <button class="btn danger" id="delete-stream" type="button">この歌枠を削除</button>
+        </div>
+      </div>
+
+      <div id="stab-setlist" style="display:none">
+        <div id="setlist-box"></div>
+        <hr style="margin:16px 0;border:none;border-top:1px solid var(--border)">
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:8px">1曲追加</h3>
+        <div class="admin-form-grid">
+          <label>曲名<input id="setlist-add-title" type="text" placeholder="曲名"></label>
+          <label>アーティスト<input id="setlist-add-artist" type="text" placeholder="省略可"></label>
+        </div>
+        <div class="admin-actions">
+          <button class="btn primary" id="setlist-add-btn" type="button">追加</button>
+        </div>
+        <hr style="margin:16px 0;border:none;border-top:1px solid var(--border)">
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:8px">複数追加（改行区切り）</h3>
+        <label class="admin-field-full">曲リスト（「曲名 / アーティスト」形式）<textarea id="setlist-bulk-text" placeholder="曲名 / アーティスト&#10;曲名&#10;曲名 / アーティスト"></textarea></label>
+        <div class="admin-actions">
+          <button class="btn ghost" id="setlist-bulk-btn" type="button">一括追加</button>
+        </div>
       </div>
     </div>
     <p class="admin-note" id="stream-meta-status"></p>
-  </section>
-
-  <section class="admin-panel">
-    <div class="section-header">
-      <h2>セトリ編集</h2>
-      <span class="badge" id="setlist-badge">—</span>
-    </div>
-    <p class="admin-note">登録済み歌枠のセトリを曲単位で追加・編集・削除できます。</p>
-    <div class="admin-form-grid">
-      <label>チャンネル<select id="setlist-channel"></select></label>
-      <label>枠番号<input id="setlist-index" type="number" min="1" placeholder="例: 173"></label>
-    </div>
-    <div class="admin-actions">
-      <button class="btn ghost" id="setlist-load" type="button">読み込み</button>
-    </div>
-    <p class="admin-note" id="setlist-status"></p>
-    <div id="setlist-box"></div>
-    <div id="setlist-add-form" style="display:none">
-      <hr style="margin:16px 0;border:none;border-top:1px solid var(--border)">
-      <h3 style="font-size:14px;font-weight:600;margin-bottom:8px">1曲追加</h3>
-      <div class="admin-form-grid">
-        <label>曲名<input id="setlist-add-title" type="text" placeholder="曲名"></label>
-        <label>アーティスト<input id="setlist-add-artist" type="text" placeholder="省略可"></label>
-      </div>
-      <div class="admin-actions">
-        <button class="btn primary" id="setlist-add-btn" type="button">追加</button>
-      </div>
-      <hr style="margin:16px 0;border:none;border-top:1px solid var(--border)">
-      <h3 style="font-size:14px;font-weight:600;margin-bottom:8px">複数追加（改行区切り）</h3>
-      <label class="admin-field-full">曲リスト（「曲名 / アーティスト」形式）<textarea id="setlist-bulk-text" placeholder="曲名 / アーティスト&#10;曲名&#10;曲名 / アーティスト"></textarea></label>
-      <div class="admin-actions">
-        <button class="btn ghost" id="setlist-bulk-btn" type="button">一括追加</button>
-      </div>
-    </div>
   </section>
 
   <section class="admin-panel">
