@@ -7218,9 +7218,8 @@ body.nav-top .tab-btn span:not(.tab-icon) {
    @media 内の 2 列指定 (4243/4319行) に勝ってしまう。375px では 1 列 60px しか
    確保できず、.stat-card の overflow:hidden で数値が両端で切れる。
    同一詳細度で最後に上書きして解消する。 */
-/* .stat-card の中身は約 112px を要するため、1 枚あたり 150px を下回らない範囲で
-   auto-fit させる。幅に応じて 5→4→3→2→1 列へ自然に折り返す。 */
-@media (max-width: 1020px) {
+/* タブレット: 1 枚 150px を下回らない範囲で auto-fit させ、折り返しても切れないように */
+@media (min-width: 601px) and (max-width: 1020px) {
   #hero .stats-grid,
   .stats-grid {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
@@ -7233,4 +7232,66 @@ body.nav-top .tab-btn span:not(.tab-icon) {
   .stat-card .stat-value {
     overflow-wrap: anywhere !important;
   }
+}
+
+/* スマホ: 2 列 3 行だと 176px を占有して縦が詰まるため、1 行の横スクロールにする。
+   scroll-snap を効かせて「切れている」ではなく「送れる」と読めるようにする。 */
+@media (max-width: 600px) {
+  #hero .stats-grid,
+  .stats-grid {
+    display: flex !important;
+    grid-template-columns: none !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    padding-bottom: 2px !important;
+  }
+  #hero .stats-grid::-webkit-scrollbar,
+  .stats-grid::-webkit-scrollbar { display: none !important; }
+
+  /* 右端をフェードさせ、「切れている」ではなく「まだ続く」と読めるようにする */
+  #hero .stats-grid,
+  .stats-grid {
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%) !important;
+            mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%) !important;
+  }
+
+  .stats-grid .stat-card {
+    flex: 0 0 auto !important;
+    width: 138px !important;
+    min-width: 138px !important;
+    overflow: visible !important;
+    scroll-snap-align: start !important;
+  }
+  .stats-grid .stat-card .stat-value {
+    overflow-wrap: anywhere !important;
+  }
+}
+
+/* 最新の歌枠: 残りの曲の折りたたみ */
+.latest-setlist-more {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+}
+.latest-setlist-more > summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 12px;
+  color: var(--primary-strong, #7ab8ea);
+  padding: 6px 0;
+  user-select: none;
+}
+.latest-setlist-more > summary::-webkit-details-marker { display: none; }
+.latest-setlist-more > summary::before {
+  content: "▸ ";
+  display: inline-block;
+  transition: transform .15s ease;
+}
+.latest-setlist-more[open] > summary::before { content: "▾ "; }
+.latest-setlist-rest {
+  display: grid;
+  grid-template-columns: inherit;
+  gap: inherit;
 }

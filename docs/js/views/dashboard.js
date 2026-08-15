@@ -335,6 +335,28 @@ function renderLatestStreamLog(stream) {
   }
   const thumb = stream.url ? youtubeThumb(stream.url) : '';
   const songs = (stream.songs || []).slice(0, 15);
+
+  // 1 カラムになるモバイルで 15 曲を全部積むとカードだけで 900px を超えるため、
+  // 先頭 5 曲だけ出して残りは折りたたむ。
+  const HEAD_COUNT = 5;
+  const setlistItem = (s, i) => {
+    const titleEl = s.key
+      ? `<span class="latest-sl-title is-link" role="button" tabindex="0" data-songkey="${escapeHtml(s.key)}">${escapeHtml(s.title || '—')}</span>`
+      : `<span class="latest-sl-title">${escapeHtml(s.title || '—')}</span>`;
+    const artistEl = s.artist
+      ? `<button class="latest-sl-artist" type="button" data-artist-search="${escapeHtml(s.artist)}">${escapeHtml(s.artist)}</button>`
+      : '';
+    return `<div class="latest-setlist-item"><strong class="latest-sl-num">${i + 1}</strong><div class="latest-sl-info">${titleEl}${artistEl}</div></div>`;
+  };
+  const head = songs.slice(0, HEAD_COUNT);
+  const rest = songs.slice(HEAD_COUNT);
+  const restHtml = rest.length
+    ? `<details class="latest-setlist-more">
+         <summary>残り${rest.length}曲を表示</summary>
+         <div class="latest-setlist-rest">${rest.map((s, i) => setlistItem(s, i + HEAD_COUNT)).join('')}</div>
+       </details>`
+    : '';
+
   return `
     <div class="card dashboard-card dashboard-latest-card">
       <div class="card-title">最新の歌枠</div>
@@ -346,15 +368,7 @@ function renderLatestStreamLog(stream) {
           <h3>${escapeHtml(stream.title || '配信')}</h3>
           <p>${icon('mic')} ${(stream.songs || []).length}曲 ・ ${daysSince(stream.date)}日前</p>
           <div class="latest-setlist">
-            ${songs.length ? songs.map((s, i) => {
-              const titleEl = s.key
-                ? `<span class="latest-sl-title is-link" role="button" tabindex="0" data-songkey="${escapeHtml(s.key)}">${escapeHtml(s.title || '—')}</span>`
-                : `<span class="latest-sl-title">${escapeHtml(s.title || '—')}</span>`;
-              const artistEl = s.artist
-                ? `<button class="latest-sl-artist" type="button" data-artist-search="${escapeHtml(s.artist)}">${escapeHtml(s.artist)}</button>`
-                : '';
-              return `<div class="latest-setlist-item"><strong class="latest-sl-num">${i + 1}</strong><div class="latest-sl-info">${titleEl}${artistEl}</div></div>`;
-            }).join('') : '<span>セットリスト未登録</span>'}
+            ${head.length ? head.map(setlistItem).join('') + restHtml : '<span>セットリスト未登録</span>'}
           </div>
         </div>
       </div>
