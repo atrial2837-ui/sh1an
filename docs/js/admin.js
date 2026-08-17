@@ -162,28 +162,57 @@ function renderSongMeta(rows) {
 function renderDuplicateGroups(groups) {
   const box = $('#dup-box');
   if (!groups.length) { box.innerHTML = ''; return; }
+
+  const safeCount = groups.filter((g) => g.confidence === 'safe').length;
+
   box.innerHTML = groups.map((g, gi) => {
-    const rows = g.songs.map((s, si) => `
+    const isSafe = g.confidence === 'safe';
+    const rows = g.songs.map((s, si) => {
+      // 要判断グループは既定選択しない。誤って別の曲を統合させないため。
+      const checked = isSafe && si === 0 ? 'checked' : '';
+      const usage = s.artistSongCount > 1
+        ? `この名義で${s.artistSongCount}曲`
+        : `<span style="color:var(--red,#e0555f)">この名義はこの1曲だけ</span>`;
+      return `
       <label style="display:flex;align-items:flex-start;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer">
         <input type="radio" name="dup-${gi}" value="${s.id}"
                data-label="${escapeHtml(s.title)}${s.artist ? ' / ' + escapeHtml(s.artist) : ''}"
-               ${si === 0 ? 'checked' : ''} style="margin-top:3px;flex:0 0 auto">
+               ${checked} style="margin-top:3px;flex:0 0 auto">
         <span style="min-width:0">
           <span style="display:block;font-size:13px">${escapeHtml(s.title)}</span>
           <span style="display:block;font-size:11px;color:var(--ink-mute)">
-            ID ${s.id}${s.artist ? ' ・ ' + escapeHtml(s.artist) : ' ・ アーティスト未設定'} ・ ${s.singCount}回歌唱${s.displayKey ? ' ・ キー ' + escapeHtml(s.displayKey) : ''}${s.genre ? ' ・ ' + escapeHtml(s.genre) : ''}
+            ID ${s.id}${s.artist ? ' ・ ' + escapeHtml(s.artist) : ' ・ アーティスト未設定'} ・ ${s.singCount}回歌唱 ・ ${usage}${s.displayKey ? ' ・ キー ' + escapeHtml(s.displayKey) : ''}${s.genre ? ' ・ ' + escapeHtml(s.genre) : ''}
           </span>
         </span>
-      </label>`).join('');
+      </label>`;
+    }).join('');
+
+    const badge = isSafe
+      ? `<span class="badge accent">表記揺れ</span>`
+      : `<span class="badge" style="border-color:var(--red,#e0555f);color:var(--red,#e0555f)">要判断</span>`;
+    const note = isSafe
+      ? '残す曲を選んで統合してください（正しい表記を既定で選択しています）'
+      : '<strong>別アーティストの同名曲かもしれません。</strong>同じ曲だと確認できた場合だけ統合してください';
+
     return `
-      <div data-dup-group style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px">
-        <div style="font-size:12px;color:var(--ink-mute);margin-bottom:6px">${g.songs.length}件が同じ曲の可能性 — 残す曲を選んでください</div>
+      <div data-dup-group style="border:1px solid ${isSafe ? 'var(--border)' : 'var(--red,#e0555f)'};border-radius:8px;padding:10px 12px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          ${badge}
+          <span style="font-size:12px;color:var(--ink-mute)">${g.songs.length}件 ・ ${escapeHtml((g.reasons || []).join(' / '))}</span>
+        </div>
+        <div style="font-size:11px;color:var(--ink-mute);margin-bottom:6px">${note}</div>
         ${rows}
         <div class="admin-actions" style="margin-top:8px">
           <button class="btn danger" data-dup-merge type="button">このグループを統合</button>
         </div>
       </div>`;
   }).join('');
+
+  if (safeCount < groups.length) {
+    box.insertAdjacentHTML('afterbegin',
+      `<p class="admin-note" style="margin-bottom:10px">表記揺れ ${safeCount}件 / 要判断 ${groups.length - safeCount}件。`
+      + `要判断のグループは別アーティストの同名曲が混ざるため、既定では何も選択していません。</p>`);
+  }
 }
 
 function renderSync(data, elapsed) {

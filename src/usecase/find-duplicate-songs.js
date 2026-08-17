@@ -8,6 +8,8 @@
  */
 
 import { buildLooseTitleKey } from '../domain/song/loose-song-key.js';
+import { classifyGroup } from '../domain/song/artist-similarity.js';
+import { normalizedKey } from '../domain/shared/text.js';
 
 /**
  * @param {object} deps
@@ -26,31 +28,50 @@ export async function findDuplicateSongs(deps) {
     }
   }
 
+  // 同じアーティスト名が DB 全体で何曲に使われているか。
+  // 打ち間違いは 1 曲だけに現れ、正しい表記は複数曲に現れるため、
+  // どちらを残すべきかの手がかりになる (例: Mrs. GREEN APPLE 3曲 / Mrs.REEN APPLE 1曲)。
+  const artistUsage = new Map();
+  for (const song of songs) {
+    const k = normalizedKey(song.artist ?? '');
+    if (!k) continue;
+    artistUsage.set(k, (artistUsage.get(k) ?? 0) + 1);
+  }
+
   const buckets = new Map();
   for (const song of songs) {
     const key = buildLooseTitleKey(song.title);
     if (!key) continue;
     if (!buckets.has(key)) buckets.set(key, []);
     buckets.get(key).push({
-      id:         song.id,
-      title:      song.title,
-      artist:     song.artist ?? null,
-      displayKey: song.display_key ?? '',
-      genre:      song.genre ?? '',
-      songKey:    song.song_key,
-      singCount:  singCounts.get(song.id) ?? 0,
+      id:              song.id,
+      title:           song.title,
+      artist:          song.artist ?? null,
+      displayKey:      song.display_key ?? '',
+      genre:           song.genre ?? '',
+      songKey:         song.song_key,
+      singCount:       singCounts.get(song.id) ?? 0,
+      artistSongCount: artistUsage.get(normalizedKey(song.artist ?? '')) ?? 0,
     });
   }
 
   const groups = [];
   for (const [key, items] of buckets) {
     if (items.length < 2) continue;
-    // 歌唱回数が多い順 → 残す候補を先頭に置く
-    items.sort((a, b) => b.singCount - a.singCount || a.id - b.id);
-    groups.push({ key, songs: items });
+    // 残す候補を先頭へ: アーティスト名が他の曲でも使われている順 → 歌唱回数順。
+    // 歌唱回数だけで並べると打ち間違いの方が多く歌われている場合に
+    // 誤った表記が既定で残ってしまう。
+    items.sort((a, b) =>
+      b.artistSongCount - a.artistSongCount ||
+      b.singCount - a.singCount ||
+      a.id - b.id);
+    groups.push({ key, songs: items, ...classifyGroup(items) });
   }
-  // 件数が多いグループを先に見せる
-  groups.sort((a, b) => b.songs.length - a.songs.length || a.key.localeCompare(b.key));
+  // 統合してよいものを先に、その中では件数が多い順に見せる
+  groups.sort((a, b) =>
+    (a.confidence === b.confidence ? 0 : a.confidence === 'safe' ? -1 : 1) ||
+    b.songs.length - a.songs.length ||
+    a.key.localeCompare(b.key));
 
   return { groups };
 }
