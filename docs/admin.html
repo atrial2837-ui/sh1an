@@ -138,6 +138,15 @@
     <p class="admin-note" id="meta-status"></p>
     <div id="song-meta-box"></div>
     <hr style="margin:16px 0;border:none;border-top:1px solid var(--border)">
+    <h3 style="font-size:14px;font-weight:600;margin-bottom:8px">重複曲をまとめる</h3>
+    <p class="admin-note">記号の字種差（<code>~</code> / <code>〜</code> / <code>～</code>）やアーティスト名の打ち間違いで同じ曲が複数に分かれているものを検出します。残す曲を選んで統合すると、他の曲のセトリ参照と歌唱回数がまとめて移動します。<strong>同名でも本当に別の曲の場合はスキップしてください。</strong></p>
+    <div class="admin-actions">
+      <button class="btn ghost" id="find-duplicates" type="button">重複曲を検出</button>
+    </div>
+    <p class="admin-note" id="dup-status"></p>
+    <div id="dup-box"></div>
+
+    <hr style="margin:16px 0;border:none;border-top:1px solid var(--border)">
     <h3 style="font-size:14px;font-weight:600;margin-bottom:8px">IDで直接統合</h3>
     <p class="admin-note">曲名変更で自動統合できない場合（記号の文字コード違いなど）にIDを直接指定して統合します。上の検索結果の左端にIDが表示されます。削除側→残す側の順で入力してください。</p>
     <div class="admin-form-grid">

@@ -29,6 +29,7 @@ import { addSongToStream } from '../../usecase/add-song-to-stream.js';
 import { removeStreamSong } from '../../usecase/remove-stream-song.js';
 import { updateStreamSong } from '../../usecase/update-stream-song.js';
 import { deleteStream } from '../../usecase/delete-stream.js';
+import { findDuplicateSongs } from '../../usecase/find-duplicate-songs.js';
 
 /**
  * @typedef {import('./router.js').RouteContext} RouteContext
@@ -133,6 +134,11 @@ export function buildAdminRouter(options) {
   router.post(p('/songs/merge'), auth(async (ctx) => {
     const body = (await readJsonBody(ctx.request)) || {};
     const result = await mergeSong(getDeps(ctx), body);
+    return jsonResponse(result);
+  }));
+
+  router.get(p('/songs/duplicates'), auth(async (ctx) => {
+    const result = await findDuplicateSongs(getDeps(ctx));
     return jsonResponse(result);
   }));
 

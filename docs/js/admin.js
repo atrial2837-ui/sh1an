@@ -159,6 +159,33 @@ function renderSongMeta(rows) {
   `;
 }
 
+function renderDuplicateGroups(groups) {
+  const box = $('#dup-box');
+  if (!groups.length) { box.innerHTML = ''; return; }
+  box.innerHTML = groups.map((g, gi) => {
+    const rows = g.songs.map((s, si) => `
+      <label style="display:flex;align-items:flex-start;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer">
+        <input type="radio" name="dup-${gi}" value="${s.id}"
+               data-label="${escapeHtml(s.title)}${s.artist ? ' / ' + escapeHtml(s.artist) : ''}"
+               ${si === 0 ? 'checked' : ''} style="margin-top:3px;flex:0 0 auto">
+        <span style="min-width:0">
+          <span style="display:block;font-size:13px">${escapeHtml(s.title)}</span>
+          <span style="display:block;font-size:11px;color:var(--ink-mute)">
+            ID ${s.id}${s.artist ? ' ・ ' + escapeHtml(s.artist) : ' ・ アーティスト未設定'} ・ ${s.singCount}回歌唱${s.displayKey ? ' ・ キー ' + escapeHtml(s.displayKey) : ''}${s.genre ? ' ・ ' + escapeHtml(s.genre) : ''}
+          </span>
+        </span>
+      </label>`).join('');
+    return `
+      <div data-dup-group style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px">
+        <div style="font-size:12px;color:var(--ink-mute);margin-bottom:6px">${g.songs.length}件が同じ曲の可能性 — 残す曲を選んでください</div>
+        ${rows}
+        <div class="admin-actions" style="margin-top:8px">
+          <button class="btn danger" data-dup-merge type="button">このグループを統合</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
 function renderSync(data, elapsed) {
   const stats = data.combined?.stats || {};
   const update = parseDate(stats.updateDate);
@@ -513,6 +540,63 @@ function initManagement() {
       $('#static-status').textContent = `起動しました: ${data.owner}/${data.repo} / ${data.workflow}\nGitHub Actions完了後、Pagesへ自動反映されます。`;
     } catch (error) {
       $('#static-status').textContent = error.message || String(error);
+    }
+  });
+
+  $('#find-duplicates')?.addEventListener('click', async () => {
+    $('#dup-status').textContent = '検出中...';
+    $('#dup-box').innerHTML = '';
+    try {
+      const data = await adminApi('songs/duplicates');
+      renderDuplicateGroups(data.groups || []);
+      $('#dup-status').textContent = data.groups?.length
+        ? `${data.groups.length}グループの重複候補が見つかりました`
+        : '重複候補は見つかりませんでした';
+    } catch (error) {
+      $('#dup-status').textContent = error.message || String(error);
+    }
+  });
+
+  // 各グループの「このグループを統合」
+  $('#dup-box')?.addEventListener('click', async (event) => {
+    const btn = event.target.closest('[data-dup-merge]');
+    if (!btn) return;
+    const group  = btn.closest('[data-dup-group]');
+    const picked = group.querySelector('input[type="radio"]:checked');
+    if (!picked) { $('#dup-status').textContent = '残す曲を選んでください'; return; }
+    const toId    = Number(picked.value);
+    const fromIds = [...group.querySelectorAll('input[type="radio"]')]
+      .map((r) => Number(r.value))
+      .filter((id) => id !== toId);
+    if (!fromIds.length) return;
+
+    const keepLabel = picked.dataset.label || `ID ${toId}`;
+    const msg = `「${keepLabel}」に ${fromIds.length}件（ID: ${fromIds.join(', ')}）を統合します。\n`
+              + `統合した曲は削除され、セトリ参照と歌唱回数は残す曲に移動します。\n`
+              + `この操作は取り消せません。よろしいですか？`;
+    if (!await showConfirm(msg)) return;
+
+    btn.disabled = true;
+    let done = 0;
+    const failed = [];
+    for (const fromId of fromIds) {
+      $('#dup-status').textContent = `統合中... ${done}/${fromIds.length}`;
+      try {
+        await adminApi('songs/merge', { fromId, toId });
+        done++;
+      } catch (error) {
+        failed.push(`ID ${fromId}: ${error.message || error}`);
+      }
+    }
+    $('#dup-status').textContent = failed.length
+      ? `${done}件を統合しました。失敗 ${failed.length}件 → ${failed.join(' / ')}`
+      : `${done}件を統合しました。静的データ生成を実行すると公開サイトに反映されます。`;
+    // 一覧を再取得して結果を反映
+    try {
+      const fresh = await adminApi('songs/duplicates');
+      renderDuplicateGroups(fresh.groups || []);
+    } catch (_) {
+      group.remove();
     }
   });
 
